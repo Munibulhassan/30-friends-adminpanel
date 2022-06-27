@@ -26,6 +26,30 @@ export const getIntroduction = async (status) => {
 };
 
 ///icebreakers
+export const createicebreakers =async(data)=>{
+  try {
+    const header = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
+        "Content-Type": "application/json",
+      },
+    };
+    const response = await axios.post(
+      `${baseURL}/icebreakers`,
+      JSON.stringify(data),
+      header
+    );
+    
+    if (response?.data?._id) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return err.message;
+  }
+}
 export const getIcebreakers = async (status) => {
   try {
     const header = {
@@ -46,29 +70,9 @@ export const getIcebreakers = async (status) => {
   }
 };
 
-export const deleteIcebreakers = async (id,data) => {
-  try {
-    const header = {
-      headers: {
-        Authorization:
-          "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
-      },
-    };
-    const response = await axios.patch(
-      `${baseURL}/icebreakers/${id}`,
-      data,
-      header
-    );
-
-    return response.data.data;
-  } catch (err) {
-    return err.message;
-  }
-};
-
 export const updateIcebreakers = async (id, payload) => {
   try {
-    console.log(id, payload);
+    
     const header = {
       headers: {
         Authorization:
@@ -89,6 +93,31 @@ export const updateIcebreakers = async (id, payload) => {
     return err.message;
   }
 };
+
+export const createbulkiceabreaker = async (data)=>{
+  try {
+    const header = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
+        "Content-Type": "application/json",
+      },
+    };
+    const response = await axios.post(
+      `${baseURL}/icebreakers/fileUpload`,
+      JSON.stringify(data),
+      header
+    );
+    
+    if (response?.data?._id) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return err.message;
+  }
+}
 ///USers
 export const getAlluser = async (status) => {
   try {
@@ -105,6 +134,30 @@ export const getAlluser = async (status) => {
     return err.message;
   }
 };
+export const updateUserStatus = async (data) => {
+  try {
+    const header = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
+        "Content-Type": "application/json",
+      },
+    };
+    const response = await axios.patch(
+      `${baseURL}/users/admin/update`,
+      JSON.stringify(data),
+      header
+    );
+    if (response?.data?.data) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return err.message;
+  }
+};
+///introduction
 export const updateintroduction =async(id,data)=>{
   try {
     const header = {
@@ -151,7 +204,8 @@ export const createintroduction =async(data)=>{
     return err.message;
   }
 }
-export const updateUserStatus = async (data) => {
+
+export const createbulkintroduction = async (data)=>{
   try {
     const header = {
       headers: {
@@ -160,12 +214,13 @@ export const updateUserStatus = async (data) => {
         "Content-Type": "application/json",
       },
     };
-    const response = await axios.patch(
-      `${baseURL}/users/admin/update`,
+    const response = await axios.post(
+      `${baseURL}/introductions/fileUpload`,
       JSON.stringify(data),
       header
     );
-    if (response?.data?.data) {
+    
+    if (response?.data) {
       return true;
     } else {
       return false;
@@ -173,7 +228,8 @@ export const updateUserStatus = async (data) => {
   } catch (err) {
     return err.message;
   }
-};
+}
+
 
 ///Lounges
 export const getAlllounges = async (status) => {
@@ -214,11 +270,11 @@ export const updateLounge = async (id, payload) => {
       header
     );
 
-    if (response.data.message == "success") {
+    if (response.data._id) {
       Toast.sucess("Lounges Updated Successfully");
-      return response.data.lounges;
+      return true;
     } else {
-      return;
+      return false;
     }
   } catch (err) {
     return err.message;
@@ -244,7 +300,21 @@ export const deleteLounge = async (id) => {
     return err.message;
   }
 };
-export const createLounge = async (data) => {
+
+export const updateloungeimages = async (id,data)=>{
+  const header = {
+    headers: {
+      Authorization:
+        "Bearer " + JSON.parse(localStorage.getItem("AccessToken"))
+      },
+      'Content-Type': 'multipart/form-data; '
+    
+  };
+  
+  const response = await axios.post(`${baseURL}/lounges/images/${id}`, data, header);
+  console.log(response);
+}
+export const createLounge = async (data,imgdata) => {
   const header = {
     headers: {
       Authorization:
@@ -253,9 +323,15 @@ export const createLounge = async (data) => {
     },
     "Content-Type": "application/json",
   };
-  console.log(header);
+  
   const response = await axios.post(`${baseURL}/lounges`, data, header);
-  console.log(response);
+  if(response.data){return true}
+  // console.log(response)
+  // console.log(imgdata);
+  // const res = await updateloungeimages(response.data._id,imgdata)
+  // console.log(res)
+  
+  
 };
 ///Admin
 export const Adminlogin = async (paylaod) => {
@@ -284,7 +360,7 @@ export const Adminlogin = async (paylaod) => {
     return err.message;
   }
 };
-export const Updateprofile = async (data) => {
+export const createAdmin = async (data) => {
   try {
     const header = {
       headers: {
@@ -292,11 +368,11 @@ export const Updateprofile = async (data) => {
           Authorization:
             "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
         },
-        "Content-Type": "application/json",
+        
       },
     };
     const response = await axios.post(
-      `${baseURL}/users/updateMe`,
+      `${baseURL}users/admin/create`,
       data,
       header
     );

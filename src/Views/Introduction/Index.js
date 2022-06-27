@@ -12,10 +12,13 @@ import {
 // import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import { Link } from "react-router-dom";
 import {
+  createbulkintroduction,
   createintroduction,
   getIntroduction,
   updateintroduction,
 } from "../../Action/action";
+import Papa from "papaparse";
+import { toast } from "react-toastify";
 function Introduction() {
   const [show, setShow] = useState(false);
   const [status, setstatus] = useState("active");
@@ -24,9 +27,16 @@ function Introduction() {
   const [text, settext] = useState("");
   const [category, setcategory] = useState("");
   const [introid, setintroid] = useState("");
+  const [page, setpage] = useState(1);
+  const [count, setcount] = useState([]);
 
   const getintro = async () => {
     const res = await getIntroduction(status);
+    var arr = [];
+    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+      arr.push(i);
+    }
+    setcount(arr);
     setdata(res);
   };
 
@@ -53,6 +63,18 @@ function Introduction() {
       getintro();
     }
   };
+  const bulkcreation = async (data) => {
+    console.log(data);
+    const payload = {
+      introductions: data,
+    };
+    
+     const res = await createbulkintroduction(payload)
+     
+
+     getintro();
+    
+  };
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -75,14 +97,43 @@ function Introduction() {
                 </span>
 
                 <span style={{ "margin-left": "10px" }}>
-                  <p
-                    onClick={() => {
-                      setShow(true);
-                      setedit(false);
+                  <label htmlFor="upload">
+                    <p>
+                      csv <i class="fas fa-upload"></i>
+                    </p>
+                  </label>
+
+                  <input
+                    type="file"
+                    id="upload"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      if (e.target.files[0].name.split(".")[1] !== "csv") {
+                        toast.info("file must have extention csv");
+                      } else {
+                        const reader = new FileReader();
+
+                        // Event listener on reader when the file
+                        // loads, we parse it and set the data.
+                        reader.onload = async ({ target }) => {
+                          const csv = Papa.parse(target.result, {
+                            header: true,
+                          });
+                          const parsedData = [];
+                          csv?.data.map((item)=>{
+                            if(item.text)
+                            {
+                              parsedData.push(item)
+                            }
+                          })
+                        
+                          
+                          bulkcreation(parsedData);
+                        };
+                        reader.readAsText(e.target.files[0]);
+                      }
                     }}
-                  >
-                    csv <i class="fas fa-upload"></i>
-                  </p>
+                  />
                 </span>
               </div>
             </Col>
@@ -167,20 +218,53 @@ function Introduction() {
             </tbody>
           </Table>
           <div className="page-changer">
-            <div className="arrow-prev">
-              <Button type="button">
+          <div className="arrow-prev">
+              <Button type="button" onClick={()=>{
+                var i = count.indexOf(page)
+                if(i-1!=-1){
+                  setpage(page-1)
+                }
+                
+              }}>
                 <i class="fa-solid fa-square-caret-left" />
+                {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
             </div>
-            <Link to={"/"} className="active">
-              1
-            </Link>
-            <Link to={"/"}>2</Link>
-            <Link to={"/"}>3</Link>
-            <Link to={"/"}>4</Link>
+            {count.map((item) => {
+              if (page == item) {
+                return (
+                  <p
+                    className="active"
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              } else {
+                return (
+                  <p
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              }
+            })}
+            
             <div className="arrow-prev">
-              <Button type="button">
+              <Button type="button"  onClick={()=>{
+                var i = count.indexOf(page)
+                if(i+1>!count.length-1){
+                  setpage(page+1)
+                }
+                
+              }}>
                 <i class="fa-solid fa-square-caret-right" />
+                {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>
             </div>
           </div>

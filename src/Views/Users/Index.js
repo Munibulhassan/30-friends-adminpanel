@@ -11,14 +11,17 @@ function Users() {
   const [data, setdata] = useState([]);
   const [status,setstatus]=useState('active')
 
-  // const [range,setrange] = useState([])
-  // const [page, setpage] = useState(1);
-  
+  const [page, setpage] = useState(1);
+  const [count, setcount] = useState([]);
   
   const getusers = async () => {
-    console.log(status);
-    const res = await getAlluser(status);
     
+    const res = await getAlluser(status);
+    var arr = [];
+    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+      arr.push(i);
+    }
+    setcount(arr);
     setdata(res);
     // setuserdata(res.splice(((page-1)*10)+1,10))
     // setrange( parseInt(res.length/10)+1)
@@ -130,23 +133,53 @@ function Users() {
             </tbody>
           </Table>
           <div className="page-changer">
-            <div className="arrow-prev">
-              <Button type="button">
-              <i class="fa-solid fa-square-caret-left" />
-
+          <div className="arrow-prev">
+              <Button type="button" onClick={()=>{
+                var i = count.indexOf(page)
+                if(i-1!=-1){
+                  setpage(page-1)
+                }
+                
+              }}>
+                <i class="fa-solid fa-square-caret-left" />
+                {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
             </div>
-
-            <Link to={"/"} className="active">
-              1
-            </Link>
-            <Link to={"/"}>2</Link>
-            <Link to={"/"}>3</Link>
-            <Link to={"/"}>4</Link>
+            {count.map((item) => {
+              if (page == item) {
+                return (
+                  <p
+                    className="active"
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              } else {
+                return (
+                  <p
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              }
+            })}
+            
             <div className="arrow-prev">
-              <Button type="button">
-              <i class="fa-solid fa-square-caret-right" />
-
+              <Button type="button"  onClick={()=>{
+                var i = count.indexOf(page)
+                if(i+1>!count.length-1){
+                  setpage(page+1)
+                }
+                
+              }}>
+                <i class="fa-solid fa-square-caret-right" />
+                {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>
             </div>
           </div>

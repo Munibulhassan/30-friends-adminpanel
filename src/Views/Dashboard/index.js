@@ -1,6 +1,6 @@
 import { Container, Row, Col, Form } from "react-bootstrap";
 import React, { useState, useEffect, Component } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "./logo.svg";
 import person_1 from "../../Assets/person_1.png";
 import person_2 from "../../Assets/person_2.png";
@@ -11,8 +11,8 @@ import admin_email from "../../Assets/admin_email.png";
 import admin_call from "../../Assets/admin_call.png";
 import admin_location from "../../Assets/admin_location.png";
 import Select from "react-select";
-// import makeAnimated from "react-select/animated";
-// import axios from "axios";
+
+import moment from "moment";
 import { imageURL } from "../../Action/config";
 import {
   createLounge,
@@ -20,11 +20,15 @@ import {
   getIcebreakers,
   getIntroduction,
 } from "../../Action/action";
+import * as fs from "fs";
 var FormData = require("form-data");
-// var fs = require('fs');
+
 function Dashboard() {
   const [ice, setice] = useState([]);
   const [intro, setintro] = useState([]);
+  const [banner, setbanner] = useState(null);
+  const [advertisementBanner, setadvertisementBanner] = useState(null);
+  const navigate = useNavigate();
 
   async function getice() {
     const data = await getIcebreakers("active");
@@ -58,14 +62,14 @@ function Dashboard() {
     introductions: [],
 
     scheduling: {},
-    chatCycle: 0,
-    lobbyInterval: 0,
-    participantsPerChat: 0,
-    endNotificationReminder: 0,
-    advertisementBanner: null,
-    banner: null,
+    chatCycle: 10,
+    lobbyInterval: 10,
+    participantsPerChat: 10,
+    endNotificationReminder: 10,
+
     url: "",
   });
+
   const [scheduling, setscheduling] = useState({
     interval: "",
     scheduleDate: "",
@@ -75,47 +79,37 @@ function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const onSubmitLouge = async () => {
-    var data = new FormData();
+    console.log(banner);
+    console.log(advertisementBanner);
+    let abc = new FormData();
 
-    data.append("banner", lougeData.banner);
-    data.append("advertisementBanner", lougeData.advertisementBanner);
+    // formdata.append("banner", JSON.stringify(banner));
+    // formdata.append("advertisementBanner",JSON.stringify(advertisementBanner));
+    // formdata.append("name",'Munib');
 
-    data.append("url", lougeData.url);
-
-    data.append("name", lougeData.name);
-    data.append("description", lougeData.description);
-    data.append("eventType", lougeData.eventType);
-    data.append(
-      "eventCat",
-      ["Daily", "Weekly", "Monthly"].includes(lougeData.eventType)
-        ? "recurring"
-        : "always-open"
-    );
-    data.append("scheduling", JSON.stringify(scheduling));
-    // data.append("icebreakers", icebreaker);
-    data.append("chatCycle", lougeData.chatCycle);
-    data.append("lobbyInterval", lougeData.lobbyInterval);
-    data.append("participantsPerChat", lougeData.participantsPerChat);
-    data.append("endNotificationReminder", lougeData.endNotificationReminder);
-    console.log(lougeData);
-    console.log(data);
+    
+    console.log(abc);
 
     if (["Daily", "Weekly", "Monthly"].includes(lougeData.eventType)) {
       lougeData.eventCat = "recurring";
     } else {
       lougeData.eventCat = "always-open";
     }
-    lougeData.banner = JSON.stringify(lougeData.banner);
-    lougeData.advertisementBanner = JSON.stringify(
-      lougeData.advertisementBanner
-    );
 
-    // lougeData.icebreakers=icebreaker
+    // console.log(scheduling);
+    // scheduling.scheduleDate = scheduling.scheduleDate  + "T00:00:00+05:00"
+    scheduling.startAt =
+      scheduling.scheduleDate + "T" + scheduling.startAt + "+05:00";
+    scheduling.endAt =
+      scheduling.scheduleDate + "T" + scheduling.endAt + "+05:00";
+
     lougeData.scheduling = scheduling;
-
-    await createLounge(lougeData);
+    await createLounge(lougeData,abc).then(e=>{
+    console.log(e)
+    navigate('/Lounge')
+    });
   };
-  console.log(lougeData);
+
   return (
     <div className="App">
       <div className="board">
@@ -145,11 +139,8 @@ function Dashboard() {
                   <Col md={12}>
                     <div className="upload-desc">
                       <label htmlFor="image-uploading">
-                        {lougeData.banner ? (
-                          <img
-                            src={URL.createObjectURL(lougeData.banner)}
-                            alt=""
-                          />
+                        {banner ? (
+                          <img src={URL.createObjectURL(banner)} alt="" />
                         ) : (
                           <img src={upload} alt="" />
                         )}
@@ -160,10 +151,8 @@ function Dashboard() {
                       <input
                         type="file"
                         onChange={(e) => {
-                          setLougedata({
-                            ...lougeData,
-                            banner: e.target.files[0],
-                          });
+                          
+                          setbanner(e.target.files[0]);
                         }}
                         style={{ display: "none" }}
                         id="image-uploading"
@@ -334,7 +323,7 @@ function Dashboard() {
                       onChange={(e) => {
                         setscheduling({
                           ...scheduling,
-                          startAt: e.target.value,
+                          startAt: moment().format(e.target.value),
                         });
                       }}
                     />
@@ -345,7 +334,10 @@ function Dashboard() {
                       type="time"
                       class="form-control"
                       onChange={(e) => {
-                        setscheduling({ ...scheduling, endAt: e.target.value });
+                        setscheduling({
+                          ...scheduling,
+                          endAt: moment().format(e.target.value),
+                        });
                       }}
                     />
                   </Col>
@@ -473,11 +465,9 @@ function Dashboard() {
 
                         <div className="upload-desc welcome-board">
                           <label htmlFor="image">
-                            {lougeData.advertisementBanner ? (
+                            {advertisementBanner ? (
                               <img
-                                src={URL.createObjectURL(
-                                  lougeData.advertisementBanner
-                                )}
+                                src={URL.createObjectURL(advertisementBanner)}
                                 alt=""
                               />
                             ) : (
@@ -489,10 +479,9 @@ function Dashboard() {
                           <input
                             type="file"
                             onChange={(e) => {
-                              setLougedata({
-                                ...lougeData,
-                                advertisementBanner: e.target.files[0],
-                              });
+                              
+
+                              setadvertisementBanner(e.target.files[0]);
                             }}
                             style={{ display: "none" }}
                             id="image"
@@ -535,7 +524,6 @@ function Dashboard() {
                         <option value="10">10 minutes</option>
                         <option value="20">20 minutes</option>
                         <option value="30">30 minutes</option>
-                        <option value="40">40 minutes</option>
                       </Form.Select>
                     </Col>
                     <Col md={12}>

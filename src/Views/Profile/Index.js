@@ -1,55 +1,56 @@
-import { Container, Row, Col, Form,InputGroup } from 'react-bootstrap';
+import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import user_img from '../../Assets/user-img.png'
-import camera from '../../Assets/cam.png'
-import { imageURL } from '../../Action/config';
-import { useEffect, useState } from 'react';
-import { logout, Updateprofile } from '../../Action/action';
-import { toast } from 'react-toastify';
+import user_img from "../../Assets/images.png";
+import camera from "../../Assets/cam.png";
+import { imageURL } from "../../Action/config";
+import { useEffect, useState } from "react";
+import { logout, createAdmin } from "../../Action/action";
+import { toast } from "react-toastify";
+// const fse = require('fs-extra')
 // import {useState} from "react"
 
 // var axios = require('axios');
-var FormData = require('form-data');
+var FormData = require("form-data");
 
 function Profile() {
-  const [image, setImage] = useState('')
-  const [payload,setpayload] = useState({
+  const [image, setImage] = useState("");
+  const [payload, setpayload] = useState({
     photo: {},
-    major:'',
-    userName:'',    
-    contact:'',
-    town:''
-    
-  })
-  console.log(payload);
-  useEffect(()=>{setImage(null)},[])
-  const navigate = useNavigate()
-const onsubmit=()=>{
-const data = new FormData()
-data.append('photo', payload.photo)
-data.append('userName', payload.userName)
-data.append('contact', payload.contact)
-data.append('town', payload.town)
-data.append('major', payload.major)
+    major: "",
+    userName: "",
+    contact: "",
+    town: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+  });
 
+  useEffect(() => {
+    setImage(null);
+  }, []);
+  const navigate = useNavigate();
+  const onsubmit =async () => {
+    var data = new FormData();
+    // const fileObject = await fse.readJson(payload.data);
+    // data.append('photo', fileObject)
+    data.append("userName", payload.userName);
+    data.append("contact", payload.contact);
+    data.append("town", payload.town);
+    data.append("major", payload.major);
+    data.append("password", payload.password);
+    data.append("passwordConfirm", payload.passwordConfirm);
 
- const res= Updateprofile(data)
- console.log(res);
- if(res){
-  toast.success("Profile Updated Successfully")
-  navigate("/")
-  logout()
-        localStorage.setItem('user','')
-  localStorage.setItem('AccessToken','')
-  
- }else{
-  toast.error("Error Occured")
+    console.log(payload);
+    const res = createAdmin(data);
+    console.log(res);
+    if (res) {
+      toast.success("User Created Successfully");
+    } else {
+      toast.error("Error Occured");
+    }
+  };
 
- }
-  
-}
-
-   const user = JSON.parse(localStorage.getItem('user'))
+  const user = JSON.parse(localStorage.getItem("user"));
 
   return (
     <div className="App">
@@ -63,7 +64,10 @@ data.append('major', payload.major)
                   <h6>{user?.username}</h6>
                 </div>
                 <div className="welcome-para">
-                  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec est enim. Nullam nulla est, vulputate vel elit ut.</p>
+                  <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                    nec est enim. Nullam nulla est, vulputate vel elit ut.
+                  </p>
                 </div>
               </div>
             </Col>
@@ -72,50 +76,57 @@ data.append('major', payload.major)
                 <Row>
                   <Col md={4}>
                     <div className="profile-img">
-                    {
-                      image?
-                      <img src={image } alt="img" />
-:
-                      <img src={ imageURL+user.photo } alt="img" />
-                    }
- 
+                      {image ? (
+                        <img src={image} alt="img" />
+                      ) : (
+                        <img src={user_img} alt="user_img" />
+                      )}
 
-                      <div className="img-importer" >
-                      <label  htmlFor="upload-button">
-
-                      <img src={camera} alt="icon" />
-                      </label>
+                      <div className="img-importer">
+                        <label htmlFor="upload-button">
+                          <img src={camera} alt="icon" />
+                        </label>
                       </div>
-                      <input type="file" id="upload-button" style={{ display: 'none' }} onChange={(e)=>{
-                        setImage(URL.createObjectURL(e.target.files[0]))
-                        setpayload({...payload,photo:e.target.files[0]})}} />
+                      <input
+                        type="file"
+                        id="upload-button"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          
+
+                          
+                          setImage(URL.createObjectURL(e.target.files[0]));
+                          setpayload({ ...payload, photo: e.target.files[0] });
+                        }}
+                      />
                     </div>
                     <div className="user-info">
-                      <h3>{user.username}</h3>
                       <h6>(Admin)</h6>
                     </div>
                   </Col>
                   <Col md={8}>
                     <div className="profile-input">
-                    <Row>
-                      <Col md={12}>
+                      <Row>
+                        <Col md={12}>
                           <div className="profile-field">
                             <label>Email Address</label>
                             <InputGroup className="mb-3">
                               <Form.Control
                                 placeholder="Your email address"
                                 type="text"
-                                value = {user.email}
-                                disabled
-                                // onChange={(e)=>{setUserdata(...payloadTransfer,{email:e.target.value})}}
+                                onChange={(e) => {
+                                  setpayload({
+                                    ...payload,
+                                    email: e.target.value,
+                                  });
+                                }}
                               />
-                          {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
+                              {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
                             </InputGroup>
                           </div>
                         </Col>
-                        </Row>
+                      </Row>
                       <Row>
-                        
                         <Col md={6}>
                           <div className="profile-field">
                             <label>Username</label>
@@ -123,10 +134,15 @@ data.append('major', payload.major)
                               <Form.Control
                                 placeholder="Your username"
                                 type="text"
-                                onChange={(e)=>{setpayload({...payload,userName:e.target.value})}}                      
+                                onChange={(e) => {
+                                  setpayload({
+                                    ...payload,
+                                    userName: e.target.value,
+                                  });
+                                }}
                                 // onChange={(e)=>{setUserdata(...payloadTransfer,{userName:e.target.value})}}
                               />
-                          {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
+                              {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
                             </InputGroup>
                           </div>
                         </Col>
@@ -137,7 +153,12 @@ data.append('major', payload.major)
                               <Form.Control
                                 placeholder="Major"
                                 type="text"
-                                onChange={(e)=>{setpayload({...payload,major:e.target.value})}}                      
+                                onChange={(e) => {
+                                  setpayload({
+                                    ...payload,
+                                    major: e.target.value,
+                                  });
+                                }}
                                 // onChange={(e)=>{setUserdata(...payloadTransfer,{userName:e.target.value})}}
                               />
                               {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
@@ -146,7 +167,6 @@ data.append('major', payload.major)
                         </Col>
                       </Row>
                       <Row>
-                       
                         <Col md={6}>
                           <div className="profile-field">
                             <label>Phone No.</label>
@@ -154,9 +174,14 @@ data.append('major', payload.major)
                               <Form.Control
                                 placeholder="Your username"
                                 type="text"
-                                onChange={(e)=>{setpayload({...payload,contact:e.target.value})}}                      
+                                onChange={(e) => {
+                                  setpayload({
+                                    ...payload,
+                                    contact: e.target.value,
+                                  });
+                                }}
                               />
-                          {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
+                              {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
                             </InputGroup>
                           </div>
                         </Col>
@@ -167,29 +192,71 @@ data.append('major', payload.major)
                               <Form.Control
                                 placeholder="Your address"
                                 type="text"
-                                onChange={(e)=>{setpayload({...payload,town:e.target.value})}}                      
+                                onChange={(e) => {
+                                  setpayload({
+                                    ...payload,
+                                    town: e.target.value,
+                                  });
+                                }}
                               />
-                          {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
+                              {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
                             </InputGroup>
                           </div>
                         </Col>
                       </Row>
-                      
+                      <Row>
+                        <Col md={6}>
+                          <div className="profile-field">
+                            <label>Password </label>
+                            <InputGroup className="mb-3">
+                              <Form.Control
+                                placeholder="Password"
+                                type="text"
+                                onChange={(e) => {
+                                  setpayload({
+                                    ...payload,
+                                    password: e.target.value,
+                                  });
+                                }}
+                              />
+                              {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
+                            </InputGroup>
+                          </div>
+                        </Col>
+                        <Col md={6}>
+                          <div className="profile-field">
+                            <label>Confirm Password</label>
+                            <InputGroup className="mb-3">
+                              <Form.Control
+                                placeholder="Confirm Password"
+                                type="text"
+                                onChange={(e) => {
+                                  setpayload({
+                                    ...payload,
+                                    passwordConfirm: e.target.value,
+                                  });
+                                }}
+                              />
+                              {/* <InputGroup.Text id="basic-addon2">edit</InputGroup.Text> */}
+                            </InputGroup>
+                          </div>
+                        </Col>
+                      </Row>
                     </div>
                   </Col>
                 </Row>
               </div>
             </Col>
             <Col md={12}>
-            <div className="create-admin" >
-            <p onClick={()=>{
-              onsubmit()
-            }}>
-
+              <div className="create-admin">
+                <p
+                  onClick={() => {
+                    onsubmit();
+                  }}
+                >
                   Create Admin
-            </p>
-                  
-                </div>
+                </p>
+              </div>
             </Col>
           </Row>
         </Container>

@@ -19,7 +19,6 @@ function Lounge() {
   const [status, setstatus] = useState("pending");
   const [id, setid] = useState();
   const [data, setdata] = useState([]);
-
   const [content, setcontent] = useState({});
   const [scheduling, setscheduling] = useState({
     interval: "",
@@ -32,13 +31,18 @@ function Lounge() {
     eventType: "",
     description: "",
   });
-  console.log(content);
-  console.log(scheduling);
+  const [page, setpage] = useState(1);
+  const [count, setcount] = useState([]);
 
   const getLounges = async () => {
-    setdata(await getAlllounges(status));
-
-    return data;
+  
+    const res = await getAlllounges(status);
+    var arr = [];
+    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+      arr.push(i);
+    }
+    setcount(arr);
+    setdata(res);
   };
   useEffect(() => {
     getLounges();
@@ -49,7 +53,12 @@ function Lounge() {
     setedit(true);
   };
 
-  const update = () => {
+  const update =async  () => {
+    if(!scheduling.startAt.split('T').length>0){
+
+      scheduling.startAt = scheduling.scheduleDate  + "T"+ scheduling.startAt + "+05:00" 
+  scheduling.endAt = scheduling.scheduleDate  + "T"+ scheduling.endAt + "+05:00" 
+    }
     const payload = {
       'name':content.name,
       'description':content.description,
@@ -59,7 +68,12 @@ function Lounge() {
     
 
 
-    updateLounge(id, payload);
+    const res = await updateLounge(id, payload);
+    console.log(res);
+    if(res){
+    getLounges();
+
+    }
   };
   const del = async (id) => {
     const res = await deleteLounge(id);
@@ -91,6 +105,8 @@ function Lounge() {
             <thead>
               <tr>
                 <th>S.No</th>
+                <th>Name</th>
+
                 <th>Description</th>
                 <th>Date</th>
                 <th>Action</th>
@@ -104,6 +120,8 @@ function Lounge() {
                   return (
                     <tr>
                       <td>{index + 1}</td>
+                      <td>{item?.name}</td>
+
                       <td>{item?.description}</td>
                       <td>{date}</td>
                       <td>
@@ -144,23 +162,53 @@ function Lounge() {
             </tbody>
           </Table>
           <div className="page-changer">
-            <div className="arrow-prev">
-              <Button type="button">
-              <i class="fa-solid fa-square-caret-left" />
-
+          <div className="arrow-prev">
+              <Button type="button" onClick={()=>{
+                var i = count.indexOf(page)
+                if(i-1!=-1){
+                  setpage(page-1)
+                }
+                
+              }}>
+                <i class="fa-solid fa-square-caret-left" />
+                {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
             </div>
-
-            <Link to={"/"} className="active">
-              1
-            </Link>
-            <Link to={"/"}>2</Link>
-            <Link to={"/"}>3</Link>
-            <Link to={"/"}>4</Link>
+            {count.map((item) => {
+              if (page == item) {
+                return (
+                  <p
+                    className="active"
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              } else {
+                return (
+                  <p
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              }
+            })}
+            
             <div className="arrow-prev">
-              <Button type="button">
-              <i class="fa-solid fa-square-caret-right" />
-
+              <Button type="button"  onClick={()=>{
+                var i = count.indexOf(page)
+                if(i+1>!count.length-1){
+                  setpage(page+1)
+                }
+                
+              }}>
+                <i class="fa-solid fa-square-caret-right" />
+                {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>
             </div>
           </div>
@@ -258,7 +306,7 @@ function Lounge() {
                             <input
                               type="date"
                               className="form-control"
-                              defaultValue={scheduling?.scheduleDate}
+                              defaultValue={scheduling?.scheduleDate.split('T')[0]}
                               onChange={(e) => {
 
                                 setscheduling({
@@ -273,7 +321,7 @@ function Lounge() {
                             <input
                               type="time"
                               className="form-control"
-                              defaultValue={scheduling?.startAt}
+                              defaultValue={scheduling?.startAt?.split('T')[1]?.split('.')[0]}
                               onChange={(e) => {
                                 setscheduling({
                                   ...scheduling,
@@ -287,7 +335,7 @@ function Lounge() {
                             <input
                               type="time"
                               class="form-control"
-                              defaultValue={scheduling?.endAt}
+                              defaultValue={scheduling?.endAt?.split('T')[1]?.split('.')[0]}
                               onChange={(e) => {
                                 setscheduling({
                                   ...scheduling,
@@ -305,7 +353,8 @@ function Lounge() {
                                   <input
                                     type="radio"
                                     name="radio"
-                                    value="Daily"
+                                    value="daily"
+                                    
                                     onChange={(e) => {
                                       setscheduling({
                                         ...scheduling,
@@ -320,7 +369,7 @@ function Lounge() {
                                   <input
                                     type="radio"
                                     name="radio"
-                                    value="Weekly"
+                                    value="weekly"
                                     onChange={(e) => {
                                       setscheduling({
                                         ...scheduling,
@@ -335,7 +384,7 @@ function Lounge() {
                                   <input
                                     type="radio"
                                     name="radio"
-                                    value="Monthly"
+                                    value="monthly"
                                     onChange={(e) => {
                                       setscheduling({
                                         ...scheduling,
@@ -350,7 +399,7 @@ function Lounge() {
                                   <input
                                     type="radio"
                                     name="radio"
-                                    value="None"
+                                    value="none"
                                     onChange={(e) => {
                                       setscheduling({
                                         ...scheduling,

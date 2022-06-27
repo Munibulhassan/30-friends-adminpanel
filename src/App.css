@@ -620,7 +620,7 @@ table {
   align-items: center;
   padding: 20px 50px;
 }
-.page-changer a {
+.page-changer a, .page-changer p {
   text-decoration: none;
   color: #000;
   height: 34px;
@@ -630,8 +630,9 @@ table {
   line-height: 28px;
   border-radius: 5px;
   margin: 0 15px;
+  cursor: pointer;
 }
-.page-changer a.active{
+.page-changer a.active,.page-changer p.active{
   background-color: #DD516A;
   color: #fff;
 }

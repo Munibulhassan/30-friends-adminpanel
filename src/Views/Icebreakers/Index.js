@@ -11,41 +11,65 @@ import {
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { Link } from "react-router-dom";
-import { deleteIcebreakers, getIcebreakers,updateIcebreakers } from "../../Action/action";
+import { toast } from "react-toastify";
+import {
+  createbulkiceabreaker,
+  createicebreakers,
+  getIcebreakers,
+  updateIcebreakers,
+} from "../../Action/action";
+import * as fs from "fs";
 
+import Papa from "papaparse";
+
+const { parse } = require("csv-parse");
 function Icbreakers() {
   const [show, setShow] = useState(false);
   const [edit, setedit] = useState(true);
   const [id, setid] = useState();
   const [data, setdata] = useState([]);
-  const [name,setname] = useState('')
-  const [description, setdescription] = useState('')
-  const [status,setstatus]=useState('active')
+  const [name, setname] = useState("");
+  const [description, setdescription] = useState("");
+  const [status, setstatus] = useState("active");
+  const [page, setpage] = useState(1);
+  const [count, setcount] = useState([]);
 
-const getbreaker = async ()=>{
-  const res = await getIcebreakers(status);
-  setdata(res);
-}
-  useEffect( () => {
-    getbreaker()
+  const getbreaker = async () => {
+    const res = await getIcebreakers(status);
+    ///setcount(res.length)
+    var arr = [];
+    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+      arr.push(i);
+    }
+    setcount(arr);
+    setdata(res);
+  };
+
+  useEffect(() => {
+    getbreaker();
   }, [status]);
 
-  const update = async ()=>{
+  const update = async (introid, payload) => {
+    const res = await updateIcebreakers(introid, payload);
+    if (res) {
+      getbreaker();
+    }
+  };
+
+  const createicebreaker = async (payload) => {
+    const res = await createicebreakers(payload);
+    if (res) {
+      getbreaker();
+    }
+  };
+
+  const bulkcreation = async (data) => {
+    console.log(data);
     const payload = {
-      name:name,
-      description:description
-      
-    }
-    console.log(payload);
-    const res = await updateIcebreakers(id,payload)
-    if(res){
-      getbreaker()
-    }
-  }
-
-
-  const del = () => {
-    deleteIcebreakers(id);
+      icebreakers: data,
+    };
+    const res = await createbulkiceabreaker(payload);
+    getbreaker();
   };
 
   const handleClose = () => setShow(false);
@@ -54,24 +78,80 @@ const getbreaker = async ()=>{
     <section className="icebreaker-sec">
       <Container>
         <div className="board">
-        <Row>
-        <Col md={8}></Col>
-          <Col md={4}>
-          <Form.Select aria-label="Event Type" onChange={e=>{setstatus(e.target.value)}} style={{'margin-bottom':'20px'}}>
-                  
-                  <option value="active">Active</option>
-                  <option value="deactive">Deactive</option>
-                  
+          <Row>
+            <Col md={8}>
+              <div className="disable">
+                <span>
+                  <p
+                    onClick={() => {
+                      setShow(true);
+                      setedit(false);
+                    }}
+                  >
+                    Create
+                  </p>
+                </span>
 
-                  
-                </Form.Select>
-          </Col>
-        </Row>
+                <span style={{ "margin-left": "10px" }}>
+                  <label htmlFor="upload">
+                    <p>
+                      csv <i class="fas fa-upload"></i>
+                    </p>
+                  </label>
+
+                  <input
+                    type="file"
+                    id="upload"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      if (e.target.files[0].name.split(".")[1] !== "csv") {
+                        toast.info("file must have extention csv");
+                      } else {
+                        const reader = new FileReader();
+
+                        // Event listener on reader when the file
+                        // loads, we parse it and set the data.
+                        console.log(reader);
+
+                        reader.onload = async ({ target }) => {
+                          console.log(target);
+                          const csv = Papa.parse(target.result, {
+                            header: true,
+                          });
+                          const parsedData = [];
+                          csv?.data.map((item) => {
+                            if (item.name && item.description) {
+                              parsedData.push(item);
+                            }
+                          });
+
+                          bulkcreation(parsedData);
+                        };
+                        reader.readAsText(e.target.files[0]);
+                      }
+                    }}
+                  />
+                </span>
+              </div>
+            </Col>
+            <Col md={4}>
+              <Form.Select
+                aria-label="Event Type"
+                onChange={(e) => {
+                  setstatus(e.target.value);
+                }}
+                style={{ "margin-bottom": "20px" }}
+              >
+                <option value="active">Active</option>
+                <option value="deactive">Deactive</option>
+              </Form.Select>
+            </Col>
+          </Row>
           <Table striped bordered>
             <thead>
               <tr>
                 <th>S.No</th>
-                <th>Name</th>                
+                <th>Name</th>
                 <th>Description</th>
                 <th>Date</th>
                 <th>Action</th>
@@ -90,26 +170,40 @@ const getbreaker = async ()=>{
                     <td>{item?.description}</td>
                     <td>{date}</td>
                     <td>
-                      <span className="bin">
-                        <button
-                          type="delete"
-                          onClick={(e) => {
-                            setid(item._id);
-                            setShow(true);
-                            setedit(false);
-                          }}
-                        >
-                          <i class="fa-solid fa-trash-can" />
-                        </button>
-                      </span>
+                      {item.active == true ? (
+                        <span className="disable">
+                          <p
+                            onClick={() => {
+                              update(item?._id, { active: false });
+                              // introductoinStatusUpdate(item._id, false);
+                            }}
+                          >
+                            disable
+                          </p>
+                        </span>
+                      ) : (
+                        <span className="enable">
+                          <p
+                            onClick={() => {
+                              setid(item._id);
+
+                              update(item?._id, { active: true });
+
+                              // introductoinStatusUpdate(item._id, true);
+                            }}
+                          >
+                            enable
+                          </p>
+                        </span>
+                      )}
                       <span className="edit">
                         <button
                           type="edit"
+                          style={{ "margin-left": "20px" }}
                           onClick={() => {
                             setid(item._id);
                             setShow(true);
                             setedit(true);
-
                           }}
                         >
                           {/* <FontAwesomeIcon icon={solid("pen-to-square")} /> */}
@@ -124,20 +218,51 @@ const getbreaker = async ()=>{
           </Table>
           <div className="page-changer">
             <div className="arrow-prev">
-              <Button type="button">
-              <i class="fa-solid fa-square-caret-left" />
+              <Button type="button" onClick={()=>{
+                var i = count.indexOf(page)
+                if(i-1!=-1){
+                  setpage(page-1)
+                }
+                
+              }}>
+                <i class="fa-solid fa-square-caret-left" />
                 {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
             </div>
-            <Link to={"/"} className="active">
-              1
-            </Link>
-            <Link to={"/"}>2</Link>
-            <Link to={"/"}>3</Link>
-            <Link to={"/"}>4</Link>
+            {count.map((item) => {
+              if (page == item) {
+                return (
+                  <p
+                    className="active"
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              } else {
+                return (
+                  <p
+                    onClick={() => {
+                      setpage(item);
+                    }}
+                  >
+                    {item}
+                  </p>
+                );
+              }
+            })}
+            
             <div className="arrow-prev">
-              <Button type="button">
-              <i class="fa-solid fa-square-caret-right" />
+              <Button type="button"  onClick={()=>{
+                var i = count.indexOf(page)
+                if(i+1>!count.length-1){
+                  setpage(page+1)
+                }
+                
+              }}>
+                <i class="fa-solid fa-square-caret-right" />
                 {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>
             </div>
@@ -156,25 +281,23 @@ const getbreaker = async ()=>{
           {edit ? (
             <Modal.Title>Edit IceBreaker</Modal.Title>
           ) : (
-            <Modal.Title>Delete IceBreaker</Modal.Title>
+            <Modal.Title>Create IceBreaker</Modal.Title>
           )}
         </Modal.Header>
         <Modal.Body>
           <Container>
-              {edit ? (
             <Row>
-                
-                <Col md={6}>
+              <Col md={6}>
                 <input
                   type="text"
                   className="form-control"
                   placeholder="Event Name..."
                   onChange={(e) => {
-                    setname(e.target.value)
+                    setname(e.target.value);
                   }}
                 />
               </Col>
-                <Col md={12}>
+              <Col md={12}>
                 <div className="basic-info">
                   <label>Description</label>
                   <Form.Group
@@ -186,52 +309,42 @@ const getbreaker = async ()=>{
                       rows={3}
                       placeholder="Type Here..."
                       onChange={(e) => {
-                        setdescription(e.target.value)
+                        setdescription(e.target.value);
                       }}
                     />
                   </Form.Group>
                 </div>
               </Col>
-               <Col md={6}>
-               <div
-                 className="update"
-                 onClick={() => {
-                  setShow(false);
-                  update()
-                }}
-               >
-                 <p   >Update</p>
-               </div>
-             </Col>
-             </Row>
-              ) : (
-                <>
-                  <div className="update" style={{ "margin-left": "22%" }}>
-                    <p
-                      
-                      onClick={() => {
-                        setShow(false);
-
-                        setedit(true);
-                        del(id);
-                      }}
-                    >
-                      Yes
-                    </p>
-                    <p
-                      
-                      onClick={() => {
-                        setShow(false);
-
-                        setedit(true);
-                      }}
-                    >
-                      No
-                    </p>
+              <Col md={6}>
+                {edit ? (
+                  <div
+                    className="update"
+                    onClick={() => {
+                      setShow(false);
+                      update(id, {
+                        name: name,
+                        description: description,
+                      });
+                    }}
+                  >
+                    <p>Update</p>
                   </div>
-                </>
-              )}
-            
+                ) : (
+                  <div
+                    className="update"
+                    onClick={() => {
+                      setShow(false);
+                      createicebreaker({
+                        name: name,
+                        description: description,
+                      });
+                    }}
+                  >
+                    <p>Create</p>
+                  </div>
+                )}
+              </Col>
+            </Row>
           </Container>
         </Modal.Body>
       </Modal>
