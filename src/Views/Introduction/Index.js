@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
-import { Link } from "react-router-dom";
+
 import {
   createbulkintroduction,
   createintroduction,
@@ -69,7 +69,7 @@ function Introduction() {
       introductions: data,
     };
 
-    const res = await createbulkintroduction(payload);
+    await createbulkintroduction(payload);
 
     getintro();
   };
@@ -176,7 +176,7 @@ function Introduction() {
                       <td>{item.category}</td>
 
                       <td>
-                        {item.active == true ? (
+                        {item.active===true ? (
                           <span className="disable">
                             <p
                               onClick={() => {
@@ -228,7 +228,7 @@ function Introduction() {
                 type="button"
                 onClick={() => {
                   var i = count.indexOf(page);
-                  if (i - 1 != -1) {
+                  if (i - 1!==-1) {
                     setpage(page - 1);
                   }
                 }}
@@ -238,7 +238,7 @@ function Introduction() {
               </Button>
             </div>
             {count.map((item) => {
-              if (page == item) {
+              if (page===item) {
                 return (
                   <p
                     className="active"

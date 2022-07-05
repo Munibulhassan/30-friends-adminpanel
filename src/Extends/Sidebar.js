@@ -22,7 +22,7 @@ function Sidebar() {
   return (
     <div
       className="sidebar"
-      style={{ display: window?.location?.pathname == "/" ? "none" : "block" }}
+      style={{ display: window?.location?.pathname==="/" ? "none" : "block" }}
     >
       <div className="logo">
         <img

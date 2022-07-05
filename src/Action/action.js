@@ -248,7 +248,7 @@ export const getAlllounges = async (status, page) => {
       header
     );
 
-    if (response.data.message == "success") {
+    if (response.data.message==="success") {
       return response.data;
     } else {
       return;
@@ -292,7 +292,7 @@ export const deleteLounge = async (id) => {
     };
     const response = await axios.delete(`${baseURL}/lounges/${id}`, header);
 
-    if (response.data.message == "success") {
+    if (response.data.message==="success") {
       return true;
     } else {
       return false;
@@ -338,7 +338,7 @@ export const createLounge = async (data) => {
 
   // console.log(response);
   // const res = await updateloungeimages(response.data?._id, imgdata);
-  // if(response.data.status == "fail" || response.data.error){
+  // if(response.data.status==="fail" || response.data.error){
   //   Toast.error(response.data.message[0])
   // }
 
@@ -414,7 +414,7 @@ export const logout = async () => {
   };
 
   const response = await axios.post(`${baseURL}/auth/logout`, {}, header);
-  if (response.data.status == "success") {
+  if (response.data.status==="success") {
     return true;
   } else {
     return false;

@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Row,
   Col,
-  Table,
-  Modal,
-  Form,
-  Button,
+  
 } from "react-bootstrap";
 import { toast } from "react-toastify";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
@@ -25,7 +22,7 @@ const Login = () => {
     };
     const res = await Adminlogin(payload);
 
-    if (res == true) {
+    if (res===true) {
       setloading(false);
       toast.success("Successfully Signin");
 

@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { Link } from "react-router-dom";
+
 import { toast } from "react-toastify";
 import {
   createbulkiceabreaker,
@@ -18,7 +18,7 @@ import {
   getIcebreakers,
   updateIcebreakers,
 } from "../../Action/action";
-import * as fs from "fs";
+
 
 import Papa from "papaparse";
 
@@ -33,7 +33,7 @@ function Icbreakers() {
   const [status, setstatus] = useState("active");
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
-  const [content, setcontent ]= useState()
+
 
   const getbreaker = async () => {
     const res = await getIcebreakers(status,page);
@@ -173,7 +173,7 @@ function Icbreakers() {
                        }</td>
                     <td>{date}</td>
                     <td>
-                      {item.active == true ? (
+                      {item.active===true ? (
                         <span className="disable">
                           <p
                             onClick={() => {
@@ -235,7 +235,7 @@ function Icbreakers() {
               </Button>
             </div>
             {count.map((item) => {
-              if (page == item) {
+              if (page===item) {
                 return (
                   <p
                     className="active"

@@ -1,11 +1,9 @@
 import { Container, Row, Col, Form } from "react-bootstrap";
-import React, { useState, useEffect, Component } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import logo from "./logo.svg";
-import person_1 from "../../Assets/person_1.png";
-import person_2 from "../../Assets/person_2.png";
+import React, { useState, useEffect } from "react";
+
+
 import upload from "../../Assets/upload.png";
-import user_img from "../../Assets/user-img.png";
+
 import admin_user from "../../Assets/admin_user.png";
 import admin_email from "../../Assets/admin_email.png";
 import admin_call from "../../Assets/admin_call.png";
@@ -16,18 +14,16 @@ import moment from "moment";
 import { baseURL, imageURL } from "../../Action/config";
 import {
   createLounge,
-  deleteLounge,
+
   getIcebreakers,
-  getIntroduction,
+
   updateloungeimages,
 } from "../../Action/action";
 // import * as fs from "fs";
 
 import { toast } from "react-toastify";
 import axios from "axios";
-var FormData = require("form-data");
-const fs = require("fs");
-const util = require("util");
+
 // const request = util.promisify(require('request'));
 
 function Dashboard() {
@@ -35,7 +31,7 @@ function Dashboard() {
   const [intro, setintro] = useState([]);
   const [banner, setbanner] = useState("");
   const [advertisementBanner, setadvertisementBanner] = useState("");
-  const navigate = useNavigate();
+
 
   async function getice() {
     var data = await getIcebreakers("active");
@@ -118,7 +114,7 @@ function Dashboard() {
     }
 
     // scheduling.scheduleDate = scheduling.scheduleDate  + "T00:00:00+05:00"
-    if (lougeData.eventType == "timed") {
+    if (lougeData.eventType==="timed") {
       scheduling.startAt =
         scheduling.scheduleDate + "T" + scheduling.startAt + "+05:00";
       scheduling.endAt =
@@ -129,10 +125,10 @@ function Dashboard() {
 
     const res = await createLounge(lougeData);
     console.log(res)
-    if (res.data?.status == "fail" || res.data?.error) {
+    if (res.data?.status==="fail" || res.data?.error) {
       toast.error(res.data.message[0]);
     } else {
-      const response = await updateloungeimages(res.data?._id, {
+       await updateloungeimages(res.data?._id, {
         banner: banner,
         advertisementBanner: advertisementBanner,
       });
@@ -264,7 +260,7 @@ function Dashboard() {
               {/* Basic info END */}
               {/* Basic info  */}
 
-              {lougeData.eventType != "permanent" ? (
+              {lougeData.eventType!=="permanent" ? (
                 <>
                   <div className="basic-info">
                     <label>Recurring</label>

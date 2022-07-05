@@ -1,10 +1,10 @@
 import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+
 import user_img from "../../Assets/images.png";
 import camera from "../../Assets/cam.png";
-import { imageURL } from "../../Action/config";
+
 import { useEffect, useState } from "react";
-import { logout, createAdmin } from "../../Action/action";
+import {  createAdmin } from "../../Action/action";
 import { toast } from "react-toastify";
 // const fse = require('fs-extra')
 // import {useState} from "react"
@@ -28,7 +28,7 @@ function Profile() {
   useEffect(() => {
     setImage(null);
   }, []);
-  const navigate = useNavigate();
+  
   const onsubmit = async () => {
     var data = new FormData();
     // const fileObject = await fse.readJson(payload.data);
@@ -44,7 +44,7 @@ function Profile() {
 
     console.log(payload);
     const res = await createAdmin(data);
-    if (res.status == "fail") {
+    if (res.status==="fail") {
       toast.error(res.message);
     } else if (res.data) {
       toast.success("Admin Created Successfully");

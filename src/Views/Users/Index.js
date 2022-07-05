@@ -147,7 +147,7 @@ function Users() {
               </Button>
             </div>
             {count.map((item) => {
-              if (page == item) {
+              if (page===item) {
                 return (
                   <p
                     className="active"

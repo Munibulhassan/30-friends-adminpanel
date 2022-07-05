@@ -10,10 +10,10 @@ import {
 } from "react-bootstrap";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { Link } from "react-router-dom";
+
 import lounge_bg from "../../Assets/lounge-bg.png";
 import { deleteLounge, getAlllounges, updateLounge, updateloungeimages } from "../../Action/action";
-import { imageURL } from "../../Action/config";
+
 import { toast } from "react-toastify";
 function Lounge() {
   const [show, setShow] = useState(false);
@@ -31,12 +31,7 @@ const [isImageChanged,setisImageChanged] = useState(false)
     startAt: "",
     endAt: "",
   });
-  const [payload, setpayload] = useState({
-    name: "",
-    eventType: "",
-    description: "",
-  });
-  
+    
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
 
@@ -193,7 +188,7 @@ const [isImageChanged,setisImageChanged] = useState(false)
               </Button>
             </div>
             {count.map((item) => {
-              if (page == item) {
+              if (page===item) {
                 return (
                   <p
                     className="active"
@@ -354,7 +349,7 @@ const [isImageChanged,setisImageChanged] = useState(false)
                       </Col>
                       <div className="basic-info">
                         <Row>
-                        {content.eventType != "permanent"? (
+                        {content.eventType!=="permanent"? (
                           <>
                           <Col md={4}>
                             <label className="date-pick">Schedule Date: </label>
