@@ -36,17 +36,17 @@ function Sidebar() {
       </div>
       <div className="navbar">
         <ul>
-          <li>
+          <li >
             <Link exact="true" to="/Loungecreate">
               Dashboard
             </Link>
           </li>
-          <li>
+          <li class="active">
             <Link exact="true" to="/Profile" className="">
               Profile
             </Link>
           </li>
-          <li>
+          <li >
             <Link exact="true" to="/Icebreakers" className="">
               IceBreakers
             </Link>

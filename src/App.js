@@ -21,7 +21,7 @@ import Sidebar from "./Extends/Sidebar";
 
 function App() {
   return (
-    <div className="App">
+    <div className="App"  style={{backgroundColor: window.location.pathname == "/" ? 'white' : "#F0F3FA" }}>
     <BrowserRouter basename="/">
     <section className="main-layout">
       <Container fluid>

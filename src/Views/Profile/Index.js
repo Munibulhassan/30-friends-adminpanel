@@ -29,22 +29,33 @@ function Profile() {
     setImage(null);
   }, []);
   const navigate = useNavigate();
-  const onsubmit =async () => {
+  const onsubmit = async () => {
     var data = new FormData();
     // const fileObject = await fse.readJson(payload.data);
-    // data.append('photo', fileObject)
+    data.append("photo", payload.photo);
     data.append("userName", payload.userName);
     data.append("contact", payload.contact);
     data.append("town", payload.town);
+    data.append("email", payload.email);
+
     data.append("major", payload.major);
     data.append("password", payload.password);
     data.append("passwordConfirm", payload.passwordConfirm);
 
     console.log(payload);
-    const res = createAdmin(data);
-    console.log(res);
-    if (res) {
-      toast.success("User Created Successfully");
+    const res = await createAdmin(data);
+    if (res.status == "fail") {
+      toast.error(res.message);
+    } else if (res.data) {
+      toast.success("Admin Created Successfully");
+      setpayload(...payload, { photo: {} });
+      setpayload(...payload, { major: "" });
+      setpayload(...payload, { userName: "" });
+      setpayload(...payload, { contact: "" });
+      setpayload(...payload, { town: "" });
+      setpayload(...payload, { email: "" });
+      setpayload(...payload, { password: "" });
+      setpayload(...payload, { passwordConfirm: "" });
     } else {
       toast.error("Error Occured");
     }
@@ -92,9 +103,6 @@ function Profile() {
                         id="upload-button"
                         style={{ display: "none" }}
                         onChange={(e) => {
-                          
-
-                          
                           setImage(URL.createObjectURL(e.target.files[0]));
                           setpayload({ ...payload, photo: e.target.files[0] });
                         }}
@@ -114,6 +122,7 @@ function Profile() {
                               <Form.Control
                                 placeholder="Your email address"
                                 type="text"
+                                value={payload.email}
                                 onChange={(e) => {
                                   setpayload({
                                     ...payload,
@@ -134,6 +143,7 @@ function Profile() {
                               <Form.Control
                                 placeholder="Your username"
                                 type="text"
+                                value={payload.userName}
                                 onChange={(e) => {
                                   setpayload({
                                     ...payload,
@@ -153,6 +163,7 @@ function Profile() {
                               <Form.Control
                                 placeholder="Major"
                                 type="text"
+                                value={payload.major}
                                 onChange={(e) => {
                                   setpayload({
                                     ...payload,
@@ -174,6 +185,7 @@ function Profile() {
                               <Form.Control
                                 placeholder="Your username"
                                 type="text"
+                                value={payload.contact}
                                 onChange={(e) => {
                                   setpayload({
                                     ...payload,
@@ -212,6 +224,7 @@ function Profile() {
                               <Form.Control
                                 placeholder="Password"
                                 type="text"
+                                value={payload.password}
                                 onChange={(e) => {
                                   setpayload({
                                     ...payload,
@@ -230,6 +243,7 @@ function Profile() {
                               <Form.Control
                                 placeholder="Confirm Password"
                                 type="text"
+                                value={payload.passwordConfirm}
                                 onChange={(e) => {
                                   setpayload({
                                     ...payload,

@@ -12,13 +12,18 @@ import {
 // import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { Link } from "react-router-dom";
 import lounge_bg from "../../Assets/lounge-bg.png";
-import { deleteLounge, getAlllounges, updateLounge } from "../../Action/action";
+import { deleteLounge, getAlllounges, updateLounge, updateloungeimages } from "../../Action/action";
+import { imageURL } from "../../Action/config";
+import { toast } from "react-toastify";
 function Lounge() {
   const [show, setShow] = useState(false);
   const [edit, setedit] = useState(true);
   const [status, setstatus] = useState("pending");
   const [id, setid] = useState();
   const [data, setdata] = useState([]);
+  const [banner, setbanner] = useState("");
+const [isImageChanged,setisImageChanged] = useState(false)
+
   const [content, setcontent] = useState({});
   const [scheduling, setscheduling] = useState({
     interval: "",
@@ -31,22 +36,23 @@ function Lounge() {
     eventType: "",
     description: "",
   });
+  
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
 
-  const getLounges = async () => {
+  const getLounges = async (page) => {
   
-    const res = await getAlllounges(status);
+    const res = await getAlllounges(status,page);
     var arr = [];
-    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+    for (var i = 1; i <= parseInt(res.noLounges / 10) + 1; i++) {
       arr.push(i);
     }
     setcount(arr);
-    setdata(res);
+    setdata(res.lounges);
   };
   useEffect(() => {
-    getLounges();
-  }, [status]);
+    getLounges(page);
+  }, [status,page]);
 
   const handleClose = () => {
     setShow(false);
@@ -69,7 +75,13 @@ function Lounge() {
 
 
     const res = await updateLounge(id, payload);
-    console.log(res);
+
+    if(isImageChanged){
+      const response = await updateloungeimages(id, {
+        banner: banner        
+      });
+    }
+    
     if(res){
     getLounges();
 
@@ -106,8 +118,8 @@ function Lounge() {
               <tr>
                 <th>S.No</th>
                 <th>Name</th>
-
                 <th>Description</th>
+                {/* <th>photo</th> */}
                 <th>Date</th>
                 <th>Action</th>
               </tr>
@@ -122,7 +134,12 @@ function Lounge() {
                       <td>{index + 1}</td>
                       <td>{item?.name}</td>
 
-                      <td>{item?.description}</td>
+                      <td>{item.description.length>30?
+                       item?.description.slice(0,30)+"..." :item?.description
+                       }</td>
+                      {/* <th>
+                      <img src={imageURL+ item?.banner}/>
+                      </th> */}
                       <td>{date}</td>
                       <td>
                         <span className="bin">
@@ -146,6 +163,7 @@ function Lounge() {
                               setShow(true);
                               setcontent(item);
                               setscheduling(item.scheduling)
+                              setbanner(item.banner)
                             }}
                           >
                           <i class="fa-solid fa-pen-to-square" />
@@ -234,20 +252,55 @@ function Lounge() {
                 <Row>
                   <Col md={12}>
                     <div className="loung-bg">
+                    
+                    
+
+                    {/* {banner?(
+                      <img src={imageURL+ banner} alt="img" />
+
+                    ):(
+
                       <img src={lounge_bg} alt="img" />
+                    )}
+                     */}
+                    
+                     <img src={lounge_bg} alt="img" />
+
                       <div className="lounge-btns">
                         <span className="bin">
-                          <button type="delete">
+                          <button type="delete" onClick={(e)=>{
+                            setisImageChanged(true)
+                            setbanner('')}}>
                           <i class="fa-solid fa-trash-can" />
                         
                           </button>
                         </span>
+                        <label htmlFor = "image-uploading">
                         <span className="edit">
-                          <button type="edit">
+                          <button type="edit" >
                           <i class="fa-solid fa-pen-to-square" />
-                        
                           </button>
                         </span>
+                        </label>
+
+                        <input
+                        type="file"
+                        onChange={(e) => {
+                          if (
+                            ["jpeg", "png", "jpg"].includes(
+                              e.target.files[0].name.split(".")[1]
+                            )
+                          ) {
+                            setisImageChanged(true)
+
+                            setbanner(e.target.files[0]);
+                          } else {
+                            toast.info("Invalid image type");
+                          }
+                        }}
+                        style={{ display: "none" }}
+                        id="image-uploading"
+                      />
                       </div>
                     </div>
                   </Col>
@@ -301,6 +354,8 @@ function Lounge() {
                       </Col>
                       <div className="basic-info">
                         <Row>
+                        {content.eventType != "permanent"? (
+                          <>
                           <Col md={4}>
                             <label className="date-pick">Schedule Date: </label>
                             <input
@@ -412,6 +467,10 @@ function Lounge() {
                               </div>
                             </div>
                           </Col>
+                          </>
+                        ):null}
+                          
+
                           <Col md={6}>
                             <div
                               className="update"

@@ -33,21 +33,22 @@ function Icbreakers() {
   const [status, setstatus] = useState("active");
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
+  const [content, setcontent ]= useState()
 
   const getbreaker = async () => {
-    const res = await getIcebreakers(status);
+    const res = await getIcebreakers(status,page);
     ///setcount(res.length)
     var arr = [];
-    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+    for (var i = 1; i <= parseInt(res.totalCount / 10) + 1; i++) {
       arr.push(i);
     }
     setcount(arr);
-    setdata(res);
+    setdata(res.data);
   };
 
   useEffect(() => {
     getbreaker();
-  }, [status]);
+  }, [status,page]);
 
   const update = async (introid, payload) => {
     const res = await updateIcebreakers(introid, payload);
@@ -111,7 +112,7 @@ function Icbreakers() {
 
                         // Event listener on reader when the file
                         // loads, we parse it and set the data.
-                        console.log(reader);
+                        
 
                         reader.onload = async ({ target }) => {
                           console.log(target);
@@ -164,10 +165,12 @@ function Icbreakers() {
                 date = date.toLocaleString().split(",")[0];
                 return (
                   <tr>
-                    <td>{index > 9 ? index + 1 : "0" + (index + 1)}</td>
+                    <td>{index + (((page-1) * 10)+1) > 9 ? index + (((page-1) * 10)+1) : "0" + (index + (((page-1) * 10)+1))}</td>
                     <td>{item?.name}</td>
 
-                    <td>{item?.description}</td>
+                    <td>{item.description.length>30?
+                       item?.description.slice(0,30)+"..." :item?.description
+                       }</td>
                     <td>{date}</td>
                     <td>
                       {item.active == true ? (
@@ -204,6 +207,8 @@ function Icbreakers() {
                             setid(item._id);
                             setShow(true);
                             setedit(true);
+                            setname(item.name)
+                            setdescription(item.description)
                           }}
                         >
                           {/* <FontAwesomeIcon icon={solid("pen-to-square")} /> */}
@@ -292,6 +297,7 @@ function Icbreakers() {
                   type="text"
                   className="form-control"
                   placeholder="Event Name..."
+                  value = {name}
                   onChange={(e) => {
                     setname(e.target.value);
                   }}
@@ -308,6 +314,8 @@ function Icbreakers() {
                       as="textarea"
                       rows={3}
                       placeholder="Type Here..."
+                  value = {description}
+
                       onChange={(e) => {
                         setdescription(e.target.value);
                       }}

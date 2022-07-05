@@ -13,41 +13,73 @@ import admin_location from "../../Assets/admin_location.png";
 import Select from "react-select";
 
 import moment from "moment";
-import { imageURL } from "../../Action/config";
+import { baseURL, imageURL } from "../../Action/config";
 import {
   createLounge,
   deleteLounge,
   getIcebreakers,
   getIntroduction,
+  updateloungeimages,
 } from "../../Action/action";
-import * as fs from "fs";
+// import * as fs from "fs";
+
+import { toast } from "react-toastify";
+import axios from "axios";
 var FormData = require("form-data");
+const fs = require("fs");
+const util = require("util");
+// const request = util.promisify(require('request'));
 
 function Dashboard() {
   const [ice, setice] = useState([]);
   const [intro, setintro] = useState([]);
-  const [banner, setbanner] = useState(null);
-  const [advertisementBanner, setadvertisementBanner] = useState(null);
+  const [banner, setbanner] = useState("");
+  const [advertisementBanner, setadvertisementBanner] = useState("");
   const navigate = useNavigate();
 
   async function getice() {
-    const data = await getIcebreakers("active");
+    var data = await getIcebreakers("active");
+    data = data.data;
     data.map((item, index) => {
       data[index].value = item._id;
 
       data[index].label = item.name;
     });
+
     setice(data);
   }
   async function getintro() {
-    const data = await getIntroduction("active");
+    const header = {
+      headers: {
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
+      },
+    };
+    const response = await axios.get(
+      `${baseURL}/introductions/admin/all?status=active`,
+      {},
+      header
+    );
+
+    // var data = await getIntroduction("active");
+    const data = response.data.data;
+
     data.map((item, index) => {
       data[index].value = item._id;
 
       data[index].label = item.text;
     });
-    setintro(data);
+    const groupByCategory = data.reduce((group, product) => {
+      const { category } = product;
+
+      group[category] = group[category] ?? [];
+      group[category].push(product);
+      return group;
+    }, {});
+
+    setintro(groupByCategory);
   }
+
   useEffect(() => {
     getice();
     getintro();
@@ -79,35 +111,32 @@ function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const onSubmitLouge = async () => {
-    console.log(banner);
-    console.log(advertisementBanner);
-    let abc = new FormData();
-
-    // formdata.append("banner", JSON.stringify(banner));
-    // formdata.append("advertisementBanner",JSON.stringify(advertisementBanner));
-    // formdata.append("name",'Munib');
-
-    
-    console.log(abc);
-
     if (["Daily", "Weekly", "Monthly"].includes(lougeData.eventType)) {
       lougeData.eventCat = "recurring";
     } else {
       lougeData.eventCat = "always-open";
     }
 
-    // console.log(scheduling);
     // scheduling.scheduleDate = scheduling.scheduleDate  + "T00:00:00+05:00"
-    scheduling.startAt =
-      scheduling.scheduleDate + "T" + scheduling.startAt + "+05:00";
-    scheduling.endAt =
-      scheduling.scheduleDate + "T" + scheduling.endAt + "+05:00";
+    if (lougeData.eventType == "timed") {
+      scheduling.startAt =
+        scheduling.scheduleDate + "T" + scheduling.startAt + "+05:00";
+      scheduling.endAt =
+        scheduling.scheduleDate + "T" + scheduling.endAt + "+05:00";
 
-    lougeData.scheduling = scheduling;
-    await createLounge(lougeData,abc).then(e=>{
-    console.log(e)
-    navigate('/Lounge')
-    });
+      lougeData.scheduling = scheduling;
+    }
+
+    const res = await createLounge(lougeData);
+    console.log(res)
+    if (res.data?.status == "fail" || res.data?.error) {
+      toast.error(res.data.message[0]);
+    } else {
+      const response = await updateloungeimages(res.data?._id, {
+        banner: banner,
+        advertisementBanner: advertisementBanner,
+      });
+    }
   };
 
   return (
@@ -151,8 +180,15 @@ function Dashboard() {
                       <input
                         type="file"
                         onChange={(e) => {
-                          
-                          setbanner(e.target.files[0]);
+                          if (
+                            ["jpeg", "png", "jpg"].includes(
+                              e.target.files[0].name.split(".")[1]
+                            )
+                          ) {
+                            setbanner(e.target.files[0]);
+                          } else {
+                            toast.info("Invalid image type");
+                          }
                         }}
                         style={{ display: "none" }}
                         id="image-uploading"
@@ -185,7 +221,7 @@ function Dashboard() {
                 </Row>
                 <Form.Control
                   type="text"
-                  placeholder="Event Name..."
+                  placeholder="Lounge Name..."
                   value={lougeData.name}
                   onChange={(e) => {
                     setLougedata({ ...lougeData, name: e.target.value });
@@ -227,122 +263,125 @@ function Dashboard() {
               </div>
               {/* Basic info END */}
               {/* Basic info  */}
-              <div className="basic-info">
-                <label>Recurring</label>
-                <div className="custom-check">
-                  <label class="container">
-                    Daily
-                    <input
-                      type="radio"
-                      name="radio"
-                      value="daily"
-                      onChange={(e) => {
-                        setscheduling({
-                          ...scheduling,
-                          interval: e.target.value,
-                        });
-                      }}
-                    />
-                    <span class="checkmark"></span>
-                  </label>
-                  {/* scheduleDate: "",
+
+              {lougeData.eventType != "permanent" ? (
+                <>
+                  <div className="basic-info">
+                    <label>Recurring</label>
+                    <div className="custom-check">
+                      <label class="container">
+                        Daily
+                        <input
+                          type="radio"
+                          name="radio"
+                          value="daily"
+                          onChange={(e) => {
+                            setscheduling({
+                              ...scheduling,
+                              interval: e.target.value,
+                            });
+                          }}
+                        />
+                        <span class="checkmark"></span>
+                      </label>
+                      {/* scheduleDate: "",
     startAt: "",
     endAt: "" */}
-                  <label class="container">
-                    Weekly
-                    <input
-                      type="radio"
-                      name="radio"
-                      value="weekly"
-                      onChange={(e) => {
-                        setscheduling({
-                          ...scheduling,
-                          interval: e.target.value,
-                        });
-                      }}
-                    />
-                    <span class="checkmark"></span>
-                  </label>
-                  <label class="container">
-                    Monthly
-                    <input
-                      type="radio"
-                      name="radio"
-                      value="monthly"
-                      onChange={(e) => {
-                        setscheduling({
-                          ...scheduling,
-                          interval: e.target.value,
-                        });
-                      }}
-                    />
-                    <span class="checkmark"></span>
-                  </label>
-                  <label class="container">
-                    None
-                    <input
-                      type="radio"
-                      name="radio"
-                      value="none"
-                      onChange={(e) => {
-                        setscheduling({
-                          ...scheduling,
-                          interval: e.target.value,
-                        });
-                      }}
-                    />
-                    <span class="checkmark"></span>
-                  </label>
-                </div>
-              </div>
-              {/* Basic info END */}
+                      <label class="container">
+                        Weekly
+                        <input
+                          type="radio"
+                          name="radio"
+                          value="weekly"
+                          onChange={(e) => {
+                            setscheduling({
+                              ...scheduling,
+                              interval: e.target.value,
+                            });
+                          }}
+                        />
+                        <span class="checkmark"></span>
+                      </label>
+                      <label class="container">
+                        Monthly
+                        <input
+                          type="radio"
+                          name="radio"
+                          value="monthly"
+                          onChange={(e) => {
+                            setscheduling({
+                              ...scheduling,
+                              interval: e.target.value,
+                            });
+                          }}
+                        />
+                        <span class="checkmark"></span>
+                      </label>
+                      <label class="container">
+                        None
+                        <input
+                          type="radio"
+                          name="radio"
+                          value="none"
+                          onChange={(e) => {
+                            setscheduling({
+                              ...scheduling,
+                              interval: e.target.value,
+                            });
+                          }}
+                        />
+                        <span class="checkmark"></span>
+                      </label>
+                    </div>
+                  </div>
 
-              {/* Basic info  */}
-              <div className="basic-info">
-                <label>Schedule Date:</label>
-                <Row>
-                  <Col md={4}>
-                    <label className="date-pick">Event Date:</label>
+                  <div className="basic-info">
+                    <label>Schedule Date:</label>
+                    <Row>
+                      <Col md={4}>
+                        <label className="date-pick">Event Date:</label>
 
-                    <input
-                      type="date"
-                      className="form-control"
-                      onChange={(e) => {
-                        setscheduling({
-                          ...scheduling,
-                          scheduleDate: e.target.value,
-                        });
-                      }}
-                    />
-                  </Col>
-                  <Col md={4}>
-                    <label className="date-pick">Starts at:</label>
-                    <input
-                      type="time"
-                      class="form-control"
-                      onChange={(e) => {
-                        setscheduling({
-                          ...scheduling,
-                          startAt: moment().format(e.target.value),
-                        });
-                      }}
-                    />
-                  </Col>
-                  <Col md={4}>
-                    <label className="date-pick">Ends at:</label>
-                    <input
-                      type="time"
-                      class="form-control"
-                      onChange={(e) => {
-                        setscheduling({
-                          ...scheduling,
-                          endAt: moment().format(e.target.value),
-                        });
-                      }}
-                    />
-                  </Col>
-                </Row>
-              </div>
+                        <input
+                          type="date"
+                          className="form-control"
+                          onChange={(e) => {
+                            setscheduling({
+                              ...scheduling,
+                              scheduleDate: e.target.value,
+                            });
+                          }}
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <label className="date-pick">Starts at:</label>
+                        <input
+                          type="time"
+                          class="form-control"
+                          onChange={(e) => {
+                            setscheduling({
+                              ...scheduling,
+                              startAt: moment().format(e.target.value),
+                            });
+                          }}
+                        />
+                      </Col>
+                      <Col md={4}>
+                        <label className="date-pick">Ends at:</label>
+                        <input
+                          type="time"
+                          class="form-control"
+                          onChange={(e) => {
+                            setscheduling({
+                              ...scheduling,
+                              endAt: moment().format(e.target.value),
+                            });
+                          }}
+                        />
+                      </Col>
+                    </Row>
+                  </div>
+                </>
+              ) : null}
               {/* Basic info END */}
             </Col>
             {/* user info card  */}
@@ -367,7 +406,11 @@ function Dashboard() {
                 <div className="admin-info">
                   <div className="ad-info">
                     <span>
-                      <img src={admin_email} alt="icon" />
+                      <img
+                        style={{ "margin-right": "15px" }}
+                        src={admin_email}
+                        alt="icon"
+                      />
                     </span>
                     <h5> {user?.email}</h5>
                   </div>
@@ -479,9 +522,15 @@ function Dashboard() {
                           <input
                             type="file"
                             onChange={(e) => {
-                              
-
-                              setadvertisementBanner(e.target.files[0]);
+                              if (
+                                ["jpeg", "png", "jpg"].includes(
+                                  e.target.files[0].name.split(".")[1]
+                                )
+                              ) {
+                                setadvertisementBanner(e.target.files[0]);
+                              } else {
+                                toast.info("Invalid image type");
+                              }
                             }}
                             style={{ display: "none" }}
                             id="image"
@@ -557,9 +606,57 @@ function Dashboard() {
                             introductions: arr,
                           });
                         }}
-                        options={intro}
+                        options={intro.hobby}
                         isMulti={true}
-                        placeholder={"select introduction"}
+                        placeholder={"Hobby"}
+                      />
+                      <Select
+                        onChange={(e) => {
+                          const arr = [...lougeData.introductions];
+                          if (!arr.includes(e[e.length - 1]._id)) {
+                            arr.push(e[e.length - 1]._id);
+                          }
+
+                          setLougedata({
+                            ...lougeData,
+                            introductions: arr,
+                          });
+                        }}
+                        options={intro.about}
+                        isMulti={true}
+                        placeholder={"About"}
+                      />
+                      <Select
+                        onChange={(e) => {
+                          const arr = [...lougeData.introductions];
+                          if (!arr.includes(e[e.length - 1]._id)) {
+                            arr.push(e[e.length - 1]._id);
+                          }
+
+                          setLougedata({
+                            ...lougeData,
+                            introductions: arr,
+                          });
+                        }}
+                        options={intro.computer}
+                        isMulti={true}
+                        placeholder={"Computer"}
+                      />
+                      <Select
+                        onChange={(e) => {
+                          const arr = [...lougeData.introductions];
+                          if (!arr.includes(e[e.length - 1]._id)) {
+                            arr.push(e[e.length - 1]._id);
+                          }
+
+                          setLougedata({
+                            ...lougeData,
+                            introductions: arr,
+                          });
+                        }}
+                        options={intro.game}
+                        isMulti={true}
+                        placeholder={"Game"}
                       />
                     </Col>
                     {/* <Col md={12} className='intro'>

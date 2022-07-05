@@ -16,13 +16,14 @@ function Users() {
   
   const getusers = async () => {
     
-    const res = await getAlluser(status);
+    const res = await getAlluser(status,page);
     var arr = [];
-    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+    console.log(res);
+    for (var i = 1; i <= parseInt(res.results / 10) + 1; i++) {
       arr.push(i);
     }
     setcount(arr);
-    setdata(res);
+    setdata(res.data);
     // setuserdata(res.splice(((page-1)*10)+1,10))
     // setrange( parseInt(res.length/10)+1)
     // for (var i = 0; i < parseInt(res.length / 10) + 1; i++) {
@@ -37,7 +38,7 @@ function Users() {
   
   useEffect(() => {
     getusers();
-  }, [status]);
+  }, [status,page]);
   
 
   const userStatusUpdate = async (id, status) => {
@@ -86,7 +87,7 @@ function Users() {
               {data.map((item, index) => {
                 return (
                   <tr>
-                    <td>{index > 9 ? index + 1 : "0" + (index + 1)}</td>
+                  <td>{index + (((page-1) * 10)+1) > 9 ? index + (((page-1) * 10)+1) : "0" + (index + (((page-1) * 10)+1))}</td>
                     <td>
                       <div className="user-inform">
                         <span>

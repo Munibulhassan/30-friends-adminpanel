@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { baseURL } from "./config.js";
 ///introduction
 
-export const getIntroduction = async (status) => {
+export const getIntroduction = async (status, page) => {
   try {
     const header = {
       headers: {
@@ -14,19 +14,19 @@ export const getIntroduction = async (status) => {
       },
     };
     const response = await axios.get(
-      `${baseURL}/introductions/admin/all?status=${status}`,
+      `${baseURL}/introductions/admin/all?status=${status}&limit=10&page=${page}`,
       {},
       header
     );
 
-    return response.data.data;
+    return response.data;
   } catch (err) {
     return err.message;
   }
 };
 
 ///icebreakers
-export const createicebreakers =async(data)=>{
+export const createicebreakers = async (data) => {
   try {
     const header = {
       headers: {
@@ -40,7 +40,7 @@ export const createicebreakers =async(data)=>{
       JSON.stringify(data),
       header
     );
-    
+
     if (response?.data?._id) {
       return true;
     } else {
@@ -49,8 +49,8 @@ export const createicebreakers =async(data)=>{
   } catch (err) {
     return err.message;
   }
-}
-export const getIcebreakers = async (status) => {
+};
+export const getIcebreakers = async (status, page) => {
   try {
     const header = {
       headers: {
@@ -59,12 +59,12 @@ export const getIcebreakers = async (status) => {
       },
     };
     const response = await axios.get(
-      `${baseURL}/icebreakers/admin/all?status=${status}`,
+      `${baseURL}/icebreakers/admin/all?page=${page}&limit=10&status=${status}`,
       {},
       header
     );
 
-    return response.data.data;
+    return response.data;
   } catch (err) {
     return err.message;
   }
@@ -72,7 +72,6 @@ export const getIcebreakers = async (status) => {
 
 export const updateIcebreakers = async (id, payload) => {
   try {
-    
     const header = {
       headers: {
         Authorization:
@@ -94,7 +93,7 @@ export const updateIcebreakers = async (id, payload) => {
   }
 };
 
-export const createbulkiceabreaker = async (data)=>{
+export const createbulkiceabreaker = async (data) => {
   try {
     const header = {
       headers: {
@@ -108,7 +107,7 @@ export const createbulkiceabreaker = async (data)=>{
       JSON.stringify(data),
       header
     );
-    
+
     if (response?.data?._id) {
       return true;
     } else {
@@ -117,9 +116,9 @@ export const createbulkiceabreaker = async (data)=>{
   } catch (err) {
     return err.message;
   }
-}
+};
 ///USers
-export const getAlluser = async (status) => {
+export const getAlluser = async (status, page) => {
   try {
     const header = {
       headers: {
@@ -127,9 +126,13 @@ export const getAlluser = async (status) => {
           "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
       },
     };
-    const response = await axios.get(`${baseURL}/users/admin/all?status=${status}`, {}, header);
+    const response = await axios.get(
+      `${baseURL}/users/admin/all?status=${status}&page=${page}&limit=10`,
+      {},
+      header
+    );
 
-    return response.data.data;
+    return response.data;
   } catch (err) {
     return err.message;
   }
@@ -158,7 +161,7 @@ export const updateUserStatus = async (data) => {
   }
 };
 ///introduction
-export const updateintroduction =async(id,data)=>{
+export const updateintroduction = async (id, data) => {
   try {
     const header = {
       headers: {
@@ -180,8 +183,8 @@ export const updateintroduction =async(id,data)=>{
   } catch (err) {
     return err.message;
   }
-}
-export const createintroduction =async(data)=>{
+};
+export const createintroduction = async (data) => {
   try {
     const header = {
       headers: {
@@ -203,9 +206,9 @@ export const createintroduction =async(data)=>{
   } catch (err) {
     return err.message;
   }
-}
+};
 
-export const createbulkintroduction = async (data)=>{
+export const createbulkintroduction = async (data) => {
   try {
     const header = {
       headers: {
@@ -219,7 +222,7 @@ export const createbulkintroduction = async (data)=>{
       JSON.stringify(data),
       header
     );
-    
+
     if (response?.data) {
       return true;
     } else {
@@ -228,11 +231,10 @@ export const createbulkintroduction = async (data)=>{
   } catch (err) {
     return err.message;
   }
-}
-
+};
 
 ///Lounges
-export const getAlllounges = async (status) => {
+export const getAlllounges = async (status, page) => {
   try {
     const header = {
       headers: {
@@ -241,13 +243,13 @@ export const getAlllounges = async (status) => {
       },
     };
     const response = await axios.get(
-      `${baseURL}/lounges/admin/all?status=${status}`,
+      `${baseURL}/lounges/admin/all?status=${status}&limit=10&page=${page}`,
       {},
       header
     );
 
     if (response.data.message == "success") {
-      return response.data.lounges;
+      return response.data;
     } else {
       return;
     }
@@ -285,14 +287,13 @@ export const deleteLounge = async (id) => {
     const header = {
       headers: {
         Authorization:
-          "Bearer " +
-          JSON.parse(localStorage.getItem("AccessToken")),
+          "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
       },
     };
     const response = await axios.delete(`${baseURL}/lounges/${id}`, header);
 
     if (response.data.message == "success") {
-      return true
+      return true;
     } else {
       return false;
     }
@@ -301,38 +302,53 @@ export const deleteLounge = async (id) => {
   }
 };
 
-export const updateloungeimages = async (id,data)=>{
-  const header = {
-    headers: {
-      Authorization:
-        "Bearer " + JSON.parse(localStorage.getItem("AccessToken"))
-      },
-      'Content-Type': 'multipart/form-data; '
+export const updateloungeimages = async (id, imgdata) => {
+  const formatdata = new FormData();
+if(imgdata.banner) {formatdata.append("banner", imgdata.banner) }
+  if(imgdata.advertisementBanner){formatdata.append("advertisementBanner", imgdata.advertisementBanner)}
     
-  };
-  
-  const response = await axios.post(`${baseURL}/lounges/images/${id}`, data, header);
-  console.log(response);
-}
-export const createLounge = async (data,imgdata) => {
+
   const header = {
     headers: {
       Authorization:
-        "Bearer " + JSON.parse(localStorage.getItem("AccessToken"))
-      
+        "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "multipart/form-data",
     },
-    "Content-Type": "application/json",
   };
-  
-  const response = await axios.post(`${baseURL}/lounges`, data, header);
-  if(response.data){return true}
-  // console.log(response)
-  // console.log(imgdata);
-  // const res = await updateloungeimages(response.data._id,imgdata)
-  // console.log(res)
-  
-  
+
+  const response = await axios.post(
+    `${baseURL}/lounges/images/${id}`,
+    formatdata,
+    header
+  );
+  return response;
 };
+export const createLounge = async (data) => {
+  const header = {
+    headers: {
+      Authorization:
+        "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
+
+  const response = await axios.post(`${baseURL}/lounges`, data, header);
+  return response.data;
+
+  // console.log(response);
+  // const res = await updateloungeimages(response.data?._id, imgdata);
+  // if(response.data.status == "fail" || response.data.error){
+  //   Toast.error(response.data.message[0])
+  // }
+
+  // if (res.data._id && response.data._id) {
+  //   return true;
+  // } else {
+  //   return false;
+  // }
+};
+
 ///Admin
 export const Adminlogin = async (paylaod) => {
   try {
@@ -364,29 +380,29 @@ export const createAdmin = async (data) => {
   try {
     const header = {
       headers: {
-        headers: {
-          Authorization:
-            "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
-        },
-        
+        Authorization:
+          "Bearer " + JSON.parse(localStorage.getItem("AccessToken")),
+        "Access-Control-Allow-Origin": "*",
       },
     };
     const response = await axios.post(
-      `${baseURL}users/admin/create`,
+      `${baseURL}/users/admin/create`,
       data,
       header
     );
-    if (response.data.user) {
-      return true;
-    } else {
-      return false;
-    }
+    return response.data;
+
+    // if (response.data.data) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
   } catch (err) {
     return err.message;
   }
 };
 
-export const logout = async ()=>{
+export const logout = async () => {
   const header = {
     headers: {
       headers: {
@@ -396,13 +412,11 @@ export const logout = async ()=>{
       "Content-Type": "application/json",
     },
   };
-  
-  const response = await axios.post(
-    `${baseURL}/auth/logout`,{},header) 
-    if(response.data.status=="success"){
-return true
-    }else{
-return false
-    }
 
-}
+  const response = await axios.post(`${baseURL}/auth/logout`, {}, header);
+  if (response.data.status == "success") {
+    return true;
+  } else {
+    return false;
+  }
+};

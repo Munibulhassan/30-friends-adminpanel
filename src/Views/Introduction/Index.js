@@ -31,18 +31,18 @@ function Introduction() {
   const [count, setcount] = useState([]);
 
   const getintro = async () => {
-    const res = await getIntroduction(status);
+    const res = await getIntroduction(status, page);
     var arr = [];
-    for (var i = 1; i <= parseInt(res.length / 10) + 1; i++) {
+    for (var i = 1; i <= parseInt(res.totalCount / 10) + 1; i++) {
       arr.push(i);
     }
     setcount(arr);
-    setdata(res);
+    setdata(res.data);
   };
 
   useEffect(() => {
     getintro();
-  }, [status]);
+  }, [status, page]);
 
   const introductoinStatusUpdate = async (id, status) => {
     const payload = {
@@ -68,12 +68,10 @@ function Introduction() {
     const payload = {
       introductions: data,
     };
-    
-     const res = await createbulkintroduction(payload)
-     
 
-     getintro();
-    
+    const res = await createbulkintroduction(payload);
+
+    getintro();
   };
 
   const handleClose = () => setShow(false);
@@ -120,14 +118,12 @@ function Introduction() {
                             header: true,
                           });
                           const parsedData = [];
-                          csv?.data.map((item)=>{
-                            if(item.text)
-                            {
-                              parsedData.push(item)
+                          csv?.data.map((item) => {
+                            if (item.text) {
+                              parsedData.push(item);
                             }
-                          })
-                        
-                          
+                          });
+
                           bulkcreation(parsedData);
                         };
                         reader.readAsText(e.target.files[0]);
@@ -157,6 +153,7 @@ function Introduction() {
                 <th>S.No</th>
                 <th>Intro Text</th>
                 <th>Date</th>
+                <th>Category</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -168,10 +165,15 @@ function Introduction() {
                   date = date.toLocaleString().split(",")[0];
                   return (
                     <tr>
-                      <td>{index > 9 ? index + 1 : "0" + (index + 1)}</td>
+                      <td>
+                        {index + ((page - 1) * 10 + 1) > 9
+                          ? index + ((page - 1) * 10 + 1)
+                          : "0" + (index + ((page - 1) * 10 + 1))}
+                      </td>
 
                       <td>{item.text}</td>
                       <td>{date}</td>
+                      <td>{item.category}</td>
 
                       <td>
                         {item.active == true ? (
@@ -202,6 +204,9 @@ function Introduction() {
                             onClick={() => {
                               setShow(true);
                               setedit(true);
+                              settext(item.text);
+                              setcategory(item.category);
+
                               setintroid(item._id);
                             }}
                           >
@@ -218,14 +223,16 @@ function Introduction() {
             </tbody>
           </Table>
           <div className="page-changer">
-          <div className="arrow-prev">
-              <Button type="button" onClick={()=>{
-                var i = count.indexOf(page)
-                if(i-1!=-1){
-                  setpage(page-1)
-                }
-                
-              }}>
+            <div className="arrow-prev">
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+                  if (i - 1 != -1) {
+                    setpage(page - 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-left" />
                 {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
@@ -254,15 +261,17 @@ function Introduction() {
                 );
               }
             })}
-            
+
             <div className="arrow-prev">
-              <Button type="button"  onClick={()=>{
-                var i = count.indexOf(page)
-                if(i+1>!count.length-1){
-                  setpage(page+1)
-                }
-                
-              }}>
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+                  if (i + 1 > !count.length - 1) {
+                    setpage(page + 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-right" />
                 {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>
@@ -291,6 +300,7 @@ function Introduction() {
               <Col md={6}>
                 <input
                   type="text"
+                  value={text}
                   className="form-control"
                   placeholder="Intro....."
                   onChange={(e) => {
@@ -302,6 +312,8 @@ function Introduction() {
               <Col md={6}>
                 <Form.Select
                   aria-label="Category"
+                  value={category}
+
                   onChange={(e) => {
                     setcategory(e.target.value);
                   }}
