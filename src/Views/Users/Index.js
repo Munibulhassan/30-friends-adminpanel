@@ -1,7 +1,7 @@
 import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { Link } from "react-router-dom";
+
 import { toast } from "react-toastify";
 import user_icon1 from "../../Assets/User-icon1.png";
 import { useEffect, useState } from "react";
@@ -18,8 +18,15 @@ function Users() {
     
     const res = await getAlluser(status,page);
     var arr = [];
-    console.log(res);
-    for (var i = 1; i <= parseInt(res.results / 10) + 1; i++) {
+    var count  = 0 
+    if((parseInt(res.results/10))*10 == res.results){
+count = res.results/10
+    }else{
+count = parseInt(res.results/10)+ 1
+
+    }
+
+    for (var i = 1; i <= count; i++) {
       arr.push(i);
     }
     setcount(arr);

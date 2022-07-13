@@ -33,7 +33,15 @@ function Introduction() {
   const getintro = async () => {
     const res = await getIntroduction(status, page);
     var arr = [];
-    for (var i = 1; i <= parseInt(res.totalCount / 10) + 1; i++) {
+    var count  = 0 
+    if((parseInt(res.totalCount/10))*10 == res.totalCount){
+count = res.totalCount/10
+    }else{
+count = parseInt(res.totalCount/10)+ 1
+
+    }
+
+    for (var i = 1; i <= count; i++) {
       arr.push(i);
     }
     setcount(arr);

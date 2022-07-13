@@ -39,7 +39,15 @@ function Icbreakers() {
     const res = await getIcebreakers(status,page);
     ///setcount(res.length)
     var arr = [];
-    for (var i = 1; i <= parseInt(res.totalCount / 10) + 1; i++) {
+    var count  = 0 
+    if((parseInt(res.totalCount/10))*10 == res.totalCount){
+count = res.totalCount/10
+    }else{
+count = parseInt(res.totalCount/10)+ 1
+
+    }
+
+    for (var i = 1; i <= count; i++) {
       arr.push(i);
     }
     setcount(arr);
@@ -153,7 +161,7 @@ function Icbreakers() {
               <tr>
                 <th>S.No</th>
                 <th>Name</th>
-                <th>Description</th>
+                {/* <th>Description</th> */}
                 <th>Date</th>
                 <th>Action</th>
               </tr>
@@ -168,9 +176,9 @@ function Icbreakers() {
                     <td>{index + (((page-1) * 10)+1) > 9 ? index + (((page-1) * 10)+1) : "0" + (index + (((page-1) * 10)+1))}</td>
                     <td>{item?.name}</td>
 
-                    <td>{item.description.length>30?
+                    {/* <td>{item.description.length>30?
                        item?.description.slice(0,30)+"..." :item?.description
-                       }</td>
+                       }</td> */}
                     <td>{date}</td>
                     <td>
                       {item.active===true ? (
@@ -296,7 +304,7 @@ function Icbreakers() {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Event Name..."
+                  placeholder="Icebreaker Name..."
                   value = {name}
                   onChange={(e) => {
                     setname(e.target.value);

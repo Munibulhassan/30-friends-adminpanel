@@ -12,9 +12,15 @@ import {
 // import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 import lounge_bg from "../../Assets/lounge-bg.png";
-import { deleteLounge, getAlllounges, updateLounge, updateloungeimages } from "../../Action/action";
+import {
+  deleteLounge,
+  getAlllounges,
+  updateLounge,
+  updateloungeimages,
+} from "../../Action/action";
 
 import { toast } from "react-toastify";
+
 function Lounge() {
   const [show, setShow] = useState(false);
   const [edit, setedit] = useState(true);
@@ -22,24 +28,30 @@ function Lounge() {
   const [id, setid] = useState();
   const [data, setdata] = useState([]);
   const [banner, setbanner] = useState("");
-const [isImageChanged,setisImageChanged] = useState(false)
+  const [isImageChanged, setisImageChanged] = useState(false);
 
   const [content, setcontent] = useState({});
   const [scheduling, setscheduling] = useState({
     interval: "",
-    scheduleDate: '',
+    scheduleDate: "",
     startAt: "",
     endAt: "",
   });
-    
+
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
 
   const getLounges = async (page) => {
-  
-    const res = await getAlllounges(status,page);
+    const res = await getAlllounges(status, page);
     var arr = [];
-    for (var i = 1; i <= parseInt(res.noLounges / 10) + 1; i++) {
+    var count = 0;
+    if (parseInt(res.noLounges / 10) * 10 == res.noLounges) {
+      count = res.noLounges / 10;
+    } else {
+      count = parseInt(res.noLounges / 10) + 1;
+    }
+
+    for (var i = 1; i <= count; i++) {
       arr.push(i);
     }
     setcount(arr);
@@ -47,36 +59,38 @@ const [isImageChanged,setisImageChanged] = useState(false)
   };
   useEffect(() => {
     getLounges(page);
-  }, [status,page]);
+  }, [status, page]);
 
   const handleClose = () => {
     setShow(false);
     setedit(true);
   };
 
-  const update =async  () => {
-    if(!scheduling.startAt.split('T').length>0){
-
-      scheduling.startAt = scheduling.scheduleDate  + "T"+ scheduling.startAt + "+05:00" 
-  scheduling.endAt = scheduling.scheduleDate  + "T"+ scheduling.endAt + "+05:00" 
+  const update = async () => {
+    if (!JSON.stringify(scheduling.startAt).includes("T")) {
+      scheduling.startAt =
+      scheduling.scheduleDate.split('T')[0] + "T" + scheduling.startAt + ":00.000Z";
     }
+    if (!JSON.stringify(scheduling.endAt).includes("T")) {
+      scheduling.endAt =
+        scheduling.scheduleDate.split('T')[0] + "T" + scheduling.endAt + ":00.000Z";
+    }
+console.log(scheduling)
     const payload = {
-      'name':content.name,
-      'description':content.description,
-      'eventType':content.eventType,
-      'scheduling':scheduling,
-    }
-    
-
+      name: content.name,
+      description: content.description,
+      eventType: content.eventType,
+      scheduling: scheduling,
+    };
 
     const res = await updateLounge(id, payload);
 
     if(isImageChanged){
       const response = await updateloungeimages(id, {
-        banner: banner        
+        banner: banner
       });
     }
-    
+
     if(res){
     getLounges();
 
@@ -107,13 +121,15 @@ const [isImageChanged,setisImageChanged] = useState(false)
               </Form.Select>
             </Col>
           </Row>
-          
+
           <Table striped bordered>
             <thead>
               <tr>
                 <th>S.No</th>
                 <th>Name</th>
                 <th>Description</th>
+                <th>Status</th>
+
                 {/* <th>photo</th> */}
                 <th>Date</th>
                 <th>Action</th>
@@ -129,9 +145,29 @@ const [isImageChanged,setisImageChanged] = useState(false)
                       <td>{index + 1}</td>
                       <td>{item?.name}</td>
 
-                      <td>{item.description.length>30?
-                       item?.description.slice(0,30)+"..." :item?.description
-                       }</td>
+                      <td>
+                        {item.description.length > 30
+                          ? item?.description.slice(0, 30) + "..."
+                          : item?.description}
+                      </td>
+                      <td>
+                        <Form.Select
+                          value={item.status}
+                          aria-label="Event Type"
+                          onChange={async (e) => {
+                            const res = await updateLounge(item._id, {
+                              status: e.target.value,
+                            });
+                            await getLounges();
+                          }}
+                          style={{ "margin-bottom": "20px" }}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="active">Active</option>
+
+                          <option value="end">End</option>
+                        </Form.Select>
+                      </td>
                       {/* <th>
                       <img src={imageURL+ item?.banner}/>
                       </th> */}
@@ -146,8 +182,7 @@ const [isImageChanged,setisImageChanged] = useState(false)
                               setedit(false);
                             }}
                           >
-                          <i class="fa-solid fa-trash-can" />
-                            
+                            <i class="fa-solid fa-trash-can" />
                           </button>
                         </span>
                         <span className="edit">
@@ -157,12 +192,11 @@ const [isImageChanged,setisImageChanged] = useState(false)
                               setid(item._id);
                               setShow(true);
                               setcontent(item);
-                              setscheduling(item.scheduling)
-                              setbanner(item.banner)
+                              setscheduling(item.scheduling);
+                              setbanner(item.banner);
                             }}
                           >
-                          <i class="fa-solid fa-pen-to-square" />
-                            
+                            <i class="fa-solid fa-pen-to-square" />
                           </button>
                         </span>
                       </td>
@@ -175,20 +209,22 @@ const [isImageChanged,setisImageChanged] = useState(false)
             </tbody>
           </Table>
           <div className="page-changer">
-          <div className="arrow-prev">
-              <Button type="button" onClick={()=>{
-                var i = count.indexOf(page)
-                if(i-1!=-1){
-                  setpage(page-1)
-                }
-                
-              }}>
+            <div className="arrow-prev">
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+                  if (i - 1 != -1) {
+                    setpage(page - 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-left" />
                 {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
             </div>
             {count.map((item) => {
-              if (page===item) {
+              if (page === item) {
                 return (
                   <p
                     className="active"
@@ -211,15 +247,17 @@ const [isImageChanged,setisImageChanged] = useState(false)
                 );
               }
             })}
-            
+
             <div className="arrow-prev">
-              <Button type="button"  onClick={()=>{
-                var i = count.indexOf(page)
-                if(i+1>!count.length-1){
-                  setpage(page+1)
-                }
-                
-              }}>
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+                  if (i + 1 > !count.length - 1) {
+                    setpage(page + 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-right" />
                 {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>
@@ -247,10 +285,7 @@ const [isImageChanged,setisImageChanged] = useState(false)
                 <Row>
                   <Col md={12}>
                     <div className="loung-bg">
-                    
-                    
-
-                    {/* {banner?(
+                      {/* {banner?(
                       <img src={imageURL+ banner} alt="img" />
 
                     ):(
@@ -258,44 +293,47 @@ const [isImageChanged,setisImageChanged] = useState(false)
                       <img src={lounge_bg} alt="img" />
                     )}
                      */}
-                    
-                     <img src={lounge_bg} alt="img" />
+
+                      <img src={lounge_bg} alt="img" />
 
                       <div className="lounge-btns">
                         <span className="bin">
-                          <button type="delete" onClick={(e)=>{
-                            setisImageChanged(true)
-                            setbanner('')}}>
-                          <i class="fa-solid fa-trash-can" />
-                        
+                          <button
+                            type="delete"
+                            onClick={(e) => {
+                              setisImageChanged(true);
+                              setbanner("");
+                            }}
+                          >
+                            <i class="fa-solid fa-trash-can" />
                           </button>
                         </span>
-                        <label htmlFor = "image-uploading">
-                        <span className="edit">
-                          <button type="edit" >
-                          <i class="fa-solid fa-pen-to-square" />
-                          </button>
-                        </span>
+                        <label htmlFor="image-uploading">
+                          <span className="edit">
+                            <button type="edit">
+                              <i class="fa-solid fa-pen-to-square" />
+                            </button>
+                          </span>
                         </label>
 
                         <input
-                        type="file"
-                        onChange={(e) => {
-                          if (
-                            ["jpeg", "png", "jpg"].includes(
-                              e.target.files[0].name.split(".")[1]
-                            )
-                          ) {
-                            setisImageChanged(true)
+                          type="file"
+                          onChange={(e) => {
+                            if (
+                              ["jpeg", "png", "jpg"].includes(
+                                e.target.files[0].name.split(".")[1]
+                              )
+                            ) {
+                              setisImageChanged(true);
 
-                            setbanner(e.target.files[0]);
-                          } else {
-                            toast.info("Invalid image type");
-                          }
-                        }}
-                        style={{ display: "none" }}
-                        id="image-uploading"
-                      />
+                              setbanner(e.target.files[0]);
+                            } else {
+                              toast.info("Invalid image type");
+                            }
+                          }}
+                          style={{ display: "none" }}
+                          id="image-uploading"
+                        />
                       </div>
                     </div>
                   </Col>
@@ -317,8 +355,10 @@ const [isImageChanged,setisImageChanged] = useState(false)
                         <Form.Select
                           defaultValue={content.eventType}
                           onChange={(e) => {
-                            setcontent({ ...content, eventType: e.target.value });
-                           
+                            setcontent({
+                              ...content,
+                              eventType: e.target.value,
+                            });
                           }}
                         >
                           <option>Event Type</option>
@@ -339,9 +379,10 @@ const [isImageChanged,setisImageChanged] = useState(false)
                               placeholder="Type Here..."
                               defaultValue={content.description}
                               onChange={(e) => {
-                            setcontent({ ...content, description: e.target.value });
-                                
-                              
+                                setcontent({
+                                  ...content,
+                                  description: e.target.value,
+                                });
                               }}
                             />
                           </Form.Group>
@@ -349,137 +390,142 @@ const [isImageChanged,setisImageChanged] = useState(false)
                       </Col>
                       <div className="basic-info">
                         <Row>
-                        {content.eventType!=="permanent"? (
-                          <>
-                          <Col md={4}>
-                            <label className="date-pick">Schedule Date: </label>
-                            <input
-                              type="date"
-                              className="form-control"
-                              defaultValue={scheduling?.scheduleDate.split('T')[0]}
-                              onChange={(e) => {
-
-                                setscheduling({
-                                  ...scheduling,
-                                  scheduleDate: e.target.value,
-                                });
-                              }}
-                            />
-                          </Col>
-                          <Col md={4}>
-                            <label className="date-pick">Starts at:</label>
-                            <input
-                              type="time"
-                              className="form-control"
-                              defaultValue={scheduling?.startAt?.split('T')[1]?.split('.')[0]}
-                              onChange={(e) => {
-                                setscheduling({
-                                  ...scheduling,
-                                  startAt: e.target.value,
-                                });
-                              }}
-                            />
-                          </Col>
-                          <Col md={4}>
-                            <label className="date-pick">Ends at:</label>
-                            <input
-                              type="time"
-                              class="form-control"
-                              defaultValue={scheduling?.endAt?.split('T')[1]?.split('.')[0]}
-                              onChange={(e) => {
-                                setscheduling({
-                                  ...scheduling,
-                                  endAt: e.target.value,
-                                });
-                              }}
-                            />
-                          </Col>
-                          <Col md={12}>
-                            <div className="basic-info">
-                              <label>Recurring</label>
-                              <div className="custom-check">
-                                <label class="container">
-                                  Daily
-                                  <input
-                                    type="radio"
-                                    name="radio"
-                                    value="daily"
-                                    
-                                    onChange={(e) => {
-                                      setscheduling({
-                                        ...scheduling,
-                                        interval: e.target.value,
-                                      });
-                                    }}
-                                  />
-                                  <span class="checkmark"></span>
+                          {content.eventType !== "permanent" ? (
+                            <>
+                              <Col md={4}>
+                                <label className="date-pick">
+                                  Schedule Date:{" "}
                                 </label>
-                                <label class="container">
-                                  Weekly
-                                  <input
-                                    type="radio"
-                                    name="radio"
-                                    value="weekly"
-                                    onChange={(e) => {
-                                      setscheduling({
-                                        ...scheduling,
-                                        interval: e.target.value,
-                                      });
-                                    }}
-                                  />
-                                  <span class="checkmark"></span>
-                                </label>
-                                <label class="container">
-                                  Monthly
-                                  <input
-                                    type="radio"
-                                    name="radio"
-                                    value="monthly"
-                                    onChange={(e) => {
-                                      setscheduling({
-                                        ...scheduling,
-                                        interval: e.target.value,
-                                      });
-                                    }}
-                                  />
-                                  <span class="checkmark"></span>
-                                </label>
-                                <label class="container">
-                                  None
-                                  <input
-                                    type="radio"
-                                    name="radio"
-                                    value="none"
-                                    onChange={(e) => {
-                                      setscheduling({
-                                        ...scheduling,
-                                        interval: e.target.value,
-                                      });
-                                    }}
-                                  />
-                                  <span class="checkmark"></span>
-                                </label>
-                              </div>
-                            </div>
-                          </Col>
-                          </>
-                        ):null}
-                          
+                                <input
+                                  type="date"
+                                  className="form-control"
+                                  defaultValue={
+                                    scheduling?.scheduleDate.split("T")[0]
+                                  }
+                                  onChange={(e) => {
+                                    setscheduling({
+                                      ...scheduling,
+                                      scheduleDate: e.target.value,
+                                    });
+                                  }}
+                                />
+                              </Col>
+                              <Col md={4}>
+                                <label className="date-pick">Starts at:</label>
+                                <input
+                                  type="time"
+                                  className="form-control"
+                                  defaultValue={
+                                    scheduling?.startAt
+                                      ?.split("T")[1]
+                                      ?.split(".")[0]
+                                  }
+                                  onChange={(e) => {
+                                    setscheduling({
+                                      ...scheduling,
+                                      startAt: e.target.value,
+                                    });
+                                  }}
+                                />
+                              </Col>
+                              <Col md={4}>
+                                <label className="date-pick">Ends at:</label>
+                                <input
+                                  type="time"
+                                  class="form-control"
+                                  defaultValue={
+                                    scheduling?.endAt
+                                      ?.split("T")[1]
+                                      ?.split(".")[0]
+                                  }
+                                  onChange={(e) => {
+                                    setscheduling({
+                                      ...scheduling,
+                                      endAt: e.target.value,
+                                    });
+                                  }}
+                                />
+                              </Col>
+                              <Col md={12}>
+                                <div className="basic-info">
+                                  <label>Recurring</label>
+                                  <div className="custom-check">
+                                    <label class="container">
+                                      Daily
+                                      <input
+                                        type="radio"
+                                        name="radio"
+                                        value="daily"
+                                        onChange={(e) => {
+                                          setscheduling({
+                                            ...scheduling,
+                                            interval: e.target.value,
+                                          });
+                                        }}
+                                      />
+                                      <span class="checkmark"></span>
+                                    </label>
+                                    <label class="container">
+                                      Weekly
+                                      <input
+                                        type="radio"
+                                        name="radio"
+                                        value="weekly"
+                                        onChange={(e) => {
+                                          setscheduling({
+                                            ...scheduling,
+                                            interval: e.target.value,
+                                          });
+                                        }}
+                                      />
+                                      <span class="checkmark"></span>
+                                    </label>
+                                    <label class="container">
+                                      Monthly
+                                      <input
+                                        type="radio"
+                                        name="radio"
+                                        value="monthly"
+                                        onChange={(e) => {
+                                          setscheduling({
+                                            ...scheduling,
+                                            interval: e.target.value,
+                                          });
+                                        }}
+                                      />
+                                      <span class="checkmark"></span>
+                                    </label>
+                                    <label class="container">
+                                      None
+                                      <input
+                                        type="radio"
+                                        name="radio"
+                                        value="none"
+                                        onChange={(e) => {
+                                          setscheduling({
+                                            ...scheduling,
+                                            interval: e.target.value,
+                                          });
+                                        }}
+                                      />
+                                      <span class="checkmark"></span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </Col>
+                            </>
+                          ) : null}
 
                           <Col md={6}>
                             <div
                               className="update"
                               onClick={() => {
                                 setShow(false);
-                                
+
                                 update();
                               }}
                             >
-                            <p>
-
-                              Update
-                            </p>
-                              
+                              <p>Update</p>
                             </div>
                           </Col>
                         </Row>

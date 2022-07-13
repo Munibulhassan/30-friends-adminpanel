@@ -729,6 +729,9 @@ table {
   background-color: white;
 cursor: pointer;
 }
+.advancedshown{
+ float: right;
+}
 .disable p, .enable p:hover{
   font-size: 16px;
   text-decoration: none;

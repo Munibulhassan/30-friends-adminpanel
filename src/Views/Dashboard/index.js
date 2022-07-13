@@ -1,7 +1,6 @@
 import { Container, Row, Col, Form } from "react-bootstrap";
 import React, { useState, useEffect } from "react";
 
-
 import upload from "../../Assets/upload.png";
 
 import admin_user from "../../Assets/admin_user.png";
@@ -14,15 +13,14 @@ import moment from "moment";
 import { baseURL, imageURL } from "../../Action/config";
 import {
   createLounge,
-
   getIcebreakers,
-
   updateloungeimages,
 } from "../../Action/action";
 // import * as fs from "fs";
 
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 // const request = util.promisify(require('request'));
 
@@ -31,8 +29,9 @@ function Dashboard() {
   const [intro, setintro] = useState([]);
   const [banner, setbanner] = useState("");
   const [advertisementBanner, setadvertisementBanner] = useState("");
+  const [shownAdvance, setshownAdvance] = useState(false);
 
-
+  const navigate = useNavigate();
   async function getice() {
     var data = await getIcebreakers("active");
     data = data.data;
@@ -114,7 +113,8 @@ function Dashboard() {
     }
 
     // scheduling.scheduleDate = scheduling.scheduleDate  + "T00:00:00+05:00"
-    if (lougeData.eventType==="timed") {
+    console.log(scheduling);
+    if (lougeData.eventType === "timed") {
       scheduling.startAt =
         scheduling.scheduleDate + "T" + scheduling.startAt + "+05:00";
       scheduling.endAt =
@@ -122,16 +122,17 @@ function Dashboard() {
 
       lougeData.scheduling = scheduling;
     }
-
+    console.log(lougeData.scheduling);
     const res = await createLounge(lougeData);
-    console.log(res)
-    if (res.data?.status==="fail" || res.data?.error) {
+
+    if (res.data?.status === "fail" || res.data?.error) {
       toast.error(res.data.message[0]);
     } else {
-       await updateloungeimages(res.data?._id, {
+      await updateloungeimages(res.data?._id, {
         banner: banner,
         advertisementBanner: advertisementBanner,
       });
+      navigate("/Lounge");
     }
   };
 
@@ -260,7 +261,7 @@ function Dashboard() {
               {/* Basic info END */}
               {/* Basic info  */}
 
-              {lougeData.eventType!=="permanent" ? (
+              {lougeData.eventType !== "permanent" ? (
                 <>
                   <div className="basic-info">
                     <label>Recurring</label>
@@ -433,12 +434,43 @@ function Dashboard() {
 
             {/* section 6 end  */}
             <Col md={12} className="advanced-sec">
+            <Row>
+              <Col md={12}
+              >
+                <div className="ad-head">
+                      <h6>
+                        Advanced setting
+                        <span className="advancedshown">
+
+                        {
+                          shownAdvance ? (
+                          <i
+                            class="fa-solid fa-arrow-down "
+                            onClick={() => {
+                              setshownAdvance(false);
+                            }}
+                          ></i>
+                        ) : (
+                          <i
+                            class="fa-solid fa-arrow-left "
+                            onClick={() => {
+                              setshownAdvance(true);
+                            }}
+                          ></i>
+                        )}
+                        </span>
+                      </h6>
+
+                      {/* <FontAwesomeIcon icon="fa-solid fa-arrow-left" /> */}
+                    </div>
+              </Col>
+            </Row>
+            {shownAdvance? (
+
               <Row>
                 <Col md={6}>
                   <section className="ad-settings">
-                    <div className="ad-head">
-                      <h6>Advanced setting</h6>
-                    </div>
+                    
                     {/* Basic info  */}
                     <div className="basic-info">
                       <Col md={12}>
@@ -541,16 +573,7 @@ function Dashboard() {
                         />
                       </Col>
                     </div>
-                    <div className="setting-btn">
-                      <p
-                        onClick={() => {
-                          onSubmitLouge();
-                        }}
-                      >
-                        Create Lounge
-                      </p>
-                      {/* <Link to={"/Advance_settings"}>Create Lounge</Link> */}
-                    </div>
+                    
                   </section>
                 </Col>
                 <Col md={6}>
@@ -665,6 +688,17 @@ function Dashboard() {
                   </div>
                 </Col>
               </Row>
+            ):null}
+            <div className="setting-btn">
+                      <p
+                        onClick={() => {
+                          onSubmitLouge();
+                        }}
+                      >
+                        Create Lounge
+                      </p>
+                      {/* <Link to={"/Advance_settings"}>Create Lounge</Link> */}
+                    </div>
             </Col>
           </Row>
         </Container>

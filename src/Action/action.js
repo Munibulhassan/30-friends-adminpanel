@@ -271,7 +271,7 @@ export const updateLounge = async (id, payload) => {
       payload,
       header
     );
-
+console.log(response)
     if (response.data._id) {
       Toast.sucess("Lounges Updated Successfully");
       return true;

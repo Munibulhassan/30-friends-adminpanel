@@ -42,8 +42,9 @@ function Profile() {
     data.append("password", payload.password);
     data.append("passwordConfirm", payload.passwordConfirm);
 
-    console.log(payload);
+    
     const res = await createAdmin(data);
+    console.log(res)
     if (res.status==="fail") {
       toast.error(res.message);
     } else if (res.data) {
@@ -57,7 +58,7 @@ function Profile() {
       setpayload(...payload, { password: "" });
       setpayload(...payload, { passwordConfirm: "" });
     } else {
-      toast.error("Error Occured");
+      toast.error(res);
     }
   };
 

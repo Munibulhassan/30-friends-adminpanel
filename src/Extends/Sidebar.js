@@ -11,14 +11,14 @@ function Sidebar() {
     localStorage.setItem("AccessToken", "");
     navigate("/");
   };
-  useEffect(() => {
-    const token = localStorage.getItem("AccessToken");
+  // useEffect(() => {
+  //   const token = localStorage.getItem("AccessToken");
 
-    if (!token) {
-      toast.info("Login First");
-      navigate("/");
-    }
-  }, []);
+  //   if (!token) {
+  //     toast.info("Login First");
+  //     navigate("/");
+  //   }
+  // }, []);
   return (
     <div
       className="sidebar"
