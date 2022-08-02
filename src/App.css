@@ -157,11 +157,11 @@ body {
   background-color: #F0F3FA;
   
   width: 100%;
-  height: 100%;
+  height: 100vh;
 
 }
 .board {
-  padding: 130px 0;
+  padding-top: 100px ;
 }
 .welcome-board {
   background-color: #fff;
@@ -546,7 +546,7 @@ a.movie-event {
   background-color: #fff;
   padding: 50px 50px;
   border-radius: 30px;
-  box-shadow: 0 0 8px 0 rgb(0 0 0 / 10%);
+  /* box-shadow: 0 0 8px 0 rgb(0 0 0 / 10%); */
 }
 .profile-input{position: relative;}
 .profile-input::before {
@@ -893,7 +893,15 @@ tr{
 }
 /* lounge END */
 
-
+.profile-header{
+  display: flex;
+}
+.profile-header .disable{
+  padding-top: 100px;
+  float:right;
+  right:100px;
+  position: absolute;
+}
 
 @media only screen and (min-width: 1366px) and (max-width: 1920px){
   .info-card{padding: 50px 50px 15px;}
@@ -985,6 +993,7 @@ tr{
   cursor: pointer;
 }
 }
+
 @media only screen and (min-width: 768px) and (max-width: 991px){}
 @media only screen and (min-width: 520px) and (max-width: 767px){}
 @media only screen and (min-width: 300px) and (max-width: 519px){}

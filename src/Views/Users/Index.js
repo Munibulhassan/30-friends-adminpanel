@@ -8,46 +8,48 @@ import { useEffect, useState } from "react";
 import { getAlluser, updateUserStatus } from "../../Action/action";
 
 function Users() {
+  const [status, setstatus] = useState("active");
   const [data, setdata] = useState([]);
-  const [status,setstatus]=useState('active')
+  
+
 
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
-  
-  const getusers = async () => {
-    
-    const res = await getAlluser(status,page);
-    var arr = [];
-    var count  = 0 
-    if((parseInt(res.results/10))*10 == res.results){
-count = res.results/10
-    }else{
-count = parseInt(res.results/10)+ 1
 
+  const getusers = async () => {
+    const res = await getAlluser(status, page);
+    var arr = [];
+    var count = 0;
+    console.log(res)
+    if (parseInt(res.results / 10) * 10 == res.results) {
+      count = res.results / 10;
+    } else {
+      count = parseInt(res.results / 10) + 1;
     }
 
     for (var i = 1; i <= count; i++) {
       arr.push(i);
     }
     setcount(arr);
-    setdata(res.data);
+    
+    
+    setdata(res.data)
     // setuserdata(res.splice(((page-1)*10)+1,10))
     // setrange( parseInt(res.length/10)+1)
     // for (var i = 0; i < parseInt(res.length / 10) + 1; i++) {
     //   pagination.push(i + 1);
     // }
-  // setrange(pagination)
+    // setrange(pagination)
   };
   // useEffect(()=>{
   //   setuserdata(data.splice(((page-1)*10)+1,10))
 
   // },[page])
-  
+
   useEffect(() => {
     getusers();
-  }, [status,page]);
-  
-
+  }, [status, page]);
+console.log(data)
   const userStatusUpdate = async (id, status) => {
     const payload = {
       user: id,
@@ -57,7 +59,6 @@ count = parseInt(res.results/10)+ 1
     const res = await updateUserStatus(payload);
     getusers();
     if (res?.error) {
-      
       toast.error("Error Occured");
     } else {
       toast.success("User status Update Successfully");
@@ -66,21 +67,22 @@ count = parseInt(res.results/10)+ 1
   return (
     <section className="icebreaker-sec users-sec">
       <Container>
-      
         <div className="board">
-        <Row>
-        <Col md={8}></Col>
-          <Col md={4}>
-          <Form.Select aria-label="Event Type" onChange={e=>{setstatus(e.target.value)}} style={{'margin-bottom':'20px'}}>
-                  
-                  <option value="active">Active</option>
-                  <option value="deactive">Deactive</option>
-                  
-
-                  
-                </Form.Select>
-          </Col>
-        </Row>
+          <Row>
+            <Col md={8}></Col>
+            <Col md={4}>
+              <Form.Select
+                aria-label="Event Type"
+                onChange={(e) => {
+                  setstatus(e.target.value);
+                }}
+                style={{ "margin-bottom": "20px" }}
+              >
+                <option value="active">Active</option>
+                <option value="deactive">Deactive</option>
+              </Form.Select>
+            </Col>
+          </Row>
           <Table striped bordered>
             <thead>
               <tr>
@@ -94,7 +96,11 @@ count = parseInt(res.results/10)+ 1
               {data.map((item, index) => {
                 return (
                   <tr>
-                  <td>{index + (((page-1) * 10)+1) > 9 ? index + (((page-1) * 10)+1) : "0" + (index + (((page-1) * 10)+1))}</td>
+                    <td>
+                      {index + ((page - 1) * 10 + 1) > 9
+                        ? index + ((page - 1) * 10 + 1)
+                        : "0" + (index + ((page - 1) * 10 + 1))}
+                    </td>
                     <td>
                       <div className="user-inform">
                         <span>
@@ -107,7 +113,7 @@ count = parseInt(res.results/10)+ 1
                     </td>
                     <td>{item.email}</td>
                     <td>
-                      {item.active=="active" ? (
+                      {item.active == "active" ? (
                         <div className="disable">
                           <span>
                             <p
@@ -141,20 +147,22 @@ count = parseInt(res.results/10)+ 1
             </tbody>
           </Table>
           <div className="page-changer">
-          <div className="arrow-prev">
-              <Button type="button" onClick={()=>{
-                var i = count.indexOf(page)
-                if(i-1!=-1){
-                  setpage(page-1)
-                }
-                
-              }}>
+            <div className="arrow-prev">
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+                  if (i - 1 != -1) {
+                    setpage(page - 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-left" />
                 {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
             </div>
             {count.map((item) => {
-              if (page===item) {
+              if (page === item) {
                 return (
                   <p
                     className="active"
@@ -177,15 +185,17 @@ count = parseInt(res.results/10)+ 1
                 );
               }
             })}
-            
+
             <div className="arrow-prev">
-              <Button type="button"  onClick={()=>{
-                var i = count.indexOf(page)
-                if(i+1>!count.length-1){
-                  setpage(page+1)
-                }
-                
-              }}>
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+                  if (i + 1 > !count.length - 1) {
+                    setpage(page + 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-right" />
                 {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>

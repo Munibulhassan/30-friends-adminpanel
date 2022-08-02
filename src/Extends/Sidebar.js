@@ -43,7 +43,7 @@ function Sidebar() {
           </li>
           <li class="active">
             <Link exact="true" to="/Profile" className="">
-              Profile
+              Sub Admin
             </Link>
           </li>
           <li >
