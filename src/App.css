@@ -754,7 +754,7 @@ cursor: pointer;
   border: 2px solid #DD516A;
 }
 .user-inform {
-  display: inline-flex;
+  display: flex;
   align-items: center;
 }
 .user-inform h6{

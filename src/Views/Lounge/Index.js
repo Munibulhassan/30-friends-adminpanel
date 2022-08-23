@@ -253,7 +253,8 @@ console.log(scheduling)
                 type="button"
                 onClick={() => {
                   var i = count.indexOf(page);
-                  if (i + 1 > !count.length - 1) {
+                 
+                  if (i !=count.length-1 ) {
                     setpage(page + 1);
                   }
                 }}

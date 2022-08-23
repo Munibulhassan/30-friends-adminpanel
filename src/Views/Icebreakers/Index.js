@@ -19,7 +19,6 @@ import {
   updateIcebreakers,
 } from "../../Action/action";
 
-
 import Papa from "papaparse";
 
 const { parse } = require("csv-parse");
@@ -34,17 +33,15 @@ function Icbreakers() {
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
 
-
   const getbreaker = async () => {
-    const res = await getIcebreakers(status,page);
+    const res = await getIcebreakers(status, page);
     ///setcount(res.length)
     var arr = [];
-    var count  = 0 
-    if((parseInt(res.totalCount/10))*10 == res.totalCount){
-count = res.totalCount/10
-    }else{
-count = parseInt(res.totalCount/10)+ 1
-
+    var count = 0;
+    if (parseInt(res.totalCount / 10) * 10 == res.totalCount) {
+      count = res.totalCount / 10;
+    } else {
+      count = parseInt(res.totalCount / 10) + 1;
     }
 
     for (var i = 1; i <= count; i++) {
@@ -56,7 +53,7 @@ count = parseInt(res.totalCount/10)+ 1
 
   useEffect(() => {
     getbreaker();
-  }, [status,page]);
+  }, [status, page]);
 
   const update = async (introid, payload) => {
     const res = await updateIcebreakers(introid, payload);
@@ -120,7 +117,6 @@ count = parseInt(res.totalCount/10)+ 1
 
                         // Event listener on reader when the file
                         // loads, we parse it and set the data.
-                        
 
                         reader.onload = async ({ target }) => {
                           console.log(target);
@@ -173,7 +169,11 @@ count = parseInt(res.totalCount/10)+ 1
                 date = date.toLocaleString().split(",")[0];
                 return (
                   <tr>
-                    <td>{index + (((page-1) * 10)+1) > 9 ? index + (((page-1) * 10)+1) : "0" + (index + (((page-1) * 10)+1))}</td>
+                    <td>
+                      {index + ((page - 1) * 10 + 1) > 9
+                        ? index + ((page - 1) * 10 + 1)
+                        : "0" + (index + ((page - 1) * 10 + 1))}
+                    </td>
                     <td>{item?.name}</td>
 
                     {/* <td>{item.description.length>30?
@@ -181,7 +181,7 @@ count = parseInt(res.totalCount/10)+ 1
                        }</td> */}
                     <td>{date}</td>
                     <td>
-                      {item.active===true ? (
+                      {item.active === true ? (
                         <span className="disable">
                           <p
                             onClick={() => {
@@ -215,8 +215,8 @@ count = parseInt(res.totalCount/10)+ 1
                             setid(item._id);
                             setShow(true);
                             setedit(true);
-                            setname(item.name)
-                            setdescription(item.description)
+                            setname(item.name);
+                            setdescription(item.description);
                           }}
                         >
                           {/* <FontAwesomeIcon icon={solid("pen-to-square")} /> */}
@@ -231,19 +231,21 @@ count = parseInt(res.totalCount/10)+ 1
           </Table>
           <div className="page-changer">
             <div className="arrow-prev">
-              <Button type="button" onClick={()=>{
-                var i = count.indexOf(page)
-                if(i-1!=-1){
-                  setpage(page-1)
-                }
-                
-              }}>
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+                  if (i - 1 != -1) {
+                    setpage(page - 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-left" />
                 {/* <FontAwesomeIcon icon={solid("caret-left")} /> */}
               </Button>
             </div>
             {count.map((item) => {
-              if (page===item) {
+              if (page === item) {
                 return (
                   <p
                     className="active"
@@ -266,15 +268,18 @@ count = parseInt(res.totalCount/10)+ 1
                 );
               }
             })}
-            
+
             <div className="arrow-prev">
-              <Button type="button"  onClick={()=>{
-                var i = count.indexOf(page)
-                if(i+1>!count.length-1){
-                  setpage(page+1)
-                }
-                
-              }}>
+              <Button
+                type="button"
+                onClick={() => {
+                  var i = count.indexOf(page);
+
+                  if (i != count.length - 1) {
+                    setpage(page + 1);
+                  }
+                }}
+              >
                 <i class="fa-solid fa-square-caret-right" />
                 {/* <FontAwesomeIcon icon={solid("caret-right")} /> */}
               </Button>
@@ -305,7 +310,7 @@ count = parseInt(res.totalCount/10)+ 1
                   type="text"
                   className="form-control"
                   placeholder="Icebreaker Name..."
-                  value = {name}
+                  value={name}
                   onChange={(e) => {
                     setname(e.target.value);
                   }}
@@ -322,8 +327,7 @@ count = parseInt(res.totalCount/10)+ 1
                       as="textarea"
                       rows={3}
                       placeholder="Type Here..."
-                  value = {description}
-
+                      value={description}
                       onChange={(e) => {
                         setdescription(e.target.value);
                       }}

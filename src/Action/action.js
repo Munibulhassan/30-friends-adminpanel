@@ -14,7 +14,7 @@ export const getIntroduction = async (status, page) => {
       },
     };
     const response = await axios.get(
-      `${baseURL}/introductions/admin/all?status=${status}&limit=10&page=${page}`,
+      `${baseURL}/introductions/admin/all?status=${status}`,
       {},
       header
     );

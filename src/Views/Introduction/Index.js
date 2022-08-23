@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 function Introduction() {
   const [show, setShow] = useState(false);
   const [status, setstatus] = useState("active");
+  const [fetchcategory, setfetchcategory] = useState("all");
   const [data, setdata] = useState([]);
   const [edit, setedit] = useState(true);
   const [text, settext] = useState("");
@@ -31,26 +32,57 @@ function Introduction() {
   const [count, setcount] = useState([]);
 
   const getintro = async () => {
-    const res = await getIntroduction(status, page);
-    var arr = [];
-    var count  = 0 
-    if((parseInt(res.totalCount/10))*10 == res.totalCount){
-count = res.totalCount/10
-    }else{
-count = parseInt(res.totalCount/10)+ 1
+    const res = await getIntroduction(status);
+    
+    if (fetchcategory == "all") {
+      var count = 0;
+      var arr = [];
+      if (parseInt(res.totalCount / 10) * 10 == res.totalCount) {
+        count = res.totalCount / 10;
+      } else {
+        count = parseInt(res.totalCount / 10) + 1;
+      }
 
-    }
+      for (var i = 1; i <= count; i++) {
+        arr.push(i);
+      }
+      setcount(arr);
+      
+      console.log((page-1) * 10)
+      setdata(res.data.slice(((page-1) * 10),((page-1) * 10)+10));
+    } else {
+      var value = [];
+      res.data.map((item, index) => {
+        if (item.category == fetchcategory) {
+          value.push(item);
+        }
+        if (index == res.data.length - 1) {
+          var arr = [];
+          
+          if (parseInt(value.length / 10) * 10 == value.length) {
+            count = value.length / 10;
+          } else {
+            count = parseInt(value.length / 10) + 1;
+          }
 
-    for (var i = 1; i <= count; i++) {
-      arr.push(i);
+          for (var i = 1; i <= count; i++) {
+            arr.push(i);
+          }
+          setcount(arr);
+          
+
+      setdata(value.slice(((page-1) * 10),((page-1) * 10)+10));
+
+      
+        }
+      });
     }
-    setcount(arr);
-    setdata(res.data);
   };
+  console.log(data)
 
   useEffect(() => {
     getintro();
-  }, [status, page]);
+  }, [status, page, fetchcategory]);
 
   const introductoinStatusUpdate = async (id, status) => {
     const payload = {
@@ -142,7 +174,7 @@ count = parseInt(res.totalCount/10)+ 1
               </div>
             </Col>
 
-            <Col md={4}>
+            <Col md={2}>
               <Form.Select
                 aria-label="Event Type"
                 onChange={(e) => {
@@ -152,6 +184,21 @@ count = parseInt(res.totalCount/10)+ 1
               >
                 <option value="active">Active</option>
                 <option value="deactive">Deactive</option>
+              </Form.Select>
+            </Col>
+            <Col md={2}>
+              <Form.Select
+                aria-label="Event Type"
+                onChange={(e) => {
+                  setfetchcategory(e.target.value);
+                }}
+                style={{ "margin-bottom": "20px" }}
+              >
+                <option value="all">All</option>
+                <option value="about">About</option>
+                <option value="computer">Computer</option>
+                <option value="hobby">Hobby</option>
+                <option value="game">Games</option>
               </Form.Select>
             </Col>
           </Row>
@@ -184,7 +231,7 @@ count = parseInt(res.totalCount/10)+ 1
                       <td>{item.category}</td>
 
                       <td>
-                        {item.active===true ? (
+                        {item.active === true ? (
                           <span className="disable">
                             <p
                               onClick={() => {
@@ -236,7 +283,7 @@ count = parseInt(res.totalCount/10)+ 1
                 type="button"
                 onClick={() => {
                   var i = count.indexOf(page);
-                  if (i - 1!==-1) {
+                  if (i - 1 !== -1) {
                     setpage(page - 1);
                   }
                 }}
@@ -246,7 +293,7 @@ count = parseInt(res.totalCount/10)+ 1
               </Button>
             </div>
             {count.map((item) => {
-              if (page===item) {
+              if (page === item) {
                 return (
                   <p
                     className="active"
@@ -275,7 +322,9 @@ count = parseInt(res.totalCount/10)+ 1
                 type="button"
                 onClick={() => {
                   var i = count.indexOf(page);
-                  if (i + 1 > !count.length - 1) {
+                  
+
+                  if (i !=count.length-1 ) {
                     setpage(page + 1);
                   }
                 }}
@@ -321,7 +370,6 @@ count = parseInt(res.totalCount/10)+ 1
                 <Form.Select
                   aria-label="Category"
                   value={category}
-
                   onChange={(e) => {
                     setcategory(e.target.value);
                   }}

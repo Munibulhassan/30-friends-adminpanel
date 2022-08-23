@@ -10,8 +10,6 @@ import { getAlluser, updateUserStatus } from "../../Action/action";
 function Users() {
   const [status, setstatus] = useState("active");
   const [data, setdata] = useState([]);
-  
-
 
   const [page, setpage] = useState(1);
   const [count, setcount] = useState([]);
@@ -20,7 +18,7 @@ function Users() {
     const res = await getAlluser(status, page);
     var arr = [];
     var count = 0;
-    console.log(res)
+    console.log(res);
     if (parseInt(res.results / 10) * 10 == res.results) {
       count = res.results / 10;
     } else {
@@ -31,9 +29,8 @@ function Users() {
       arr.push(i);
     }
     setcount(arr);
-    
-    
-    setdata(res.data)
+
+    setdata(res.data);
     // setuserdata(res.splice(((page-1)*10)+1,10))
     // setrange( parseInt(res.length/10)+1)
     // for (var i = 0; i < parseInt(res.length / 10) + 1; i++) {
@@ -49,7 +46,7 @@ function Users() {
   useEffect(() => {
     getusers();
   }, [status, page]);
-console.log(data)
+  console.log(data);
   const userStatusUpdate = async (id, status) => {
     const payload = {
       user: id,
@@ -191,7 +188,8 @@ console.log(data)
                 type="button"
                 onClick={() => {
                   var i = count.indexOf(page);
-                  if (i + 1 > !count.length - 1) {
+
+                  if (i != count.length - 1) {
                     setpage(page + 1);
                   }
                 }}
